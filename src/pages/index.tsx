@@ -34,45 +34,127 @@ export default function Home() {
   const [openHelp, setOpenHelp] = useState(false);
 
   // Algorithm Example
-  function similarity(s1: String, s2: String) {
-    var longer = s1;
-    var shorter = s2;
-    if (s1.length < s2.length) {
-      longer = s2;
-      shorter = s1;
+
+  function similarity(s1 : string, s2 : string) {
+    var result;
+    
+    if (s1.length == 0 || s2.length == 0){
+      result = 1.0;
     }
-    var longerLength = longer.length;
-    if (longerLength == 0) {
-      return 1.0;
+    else if (s1.length > s2.length) {
+      result = ((s1.length - editDistance(s1,s2))/Number(s1.length));
     }
-    return (
-      (longerLength - editDistance(longer, shorter)) /
-      parseFloat(longerLength.toString())
-    );
+    else {
+      result = ((s2.length - editDistance(s1,s2))/Number(s2.length));
+    }
+
+    return result;
   }
 
-  function editDistance(s1: String, s2: String) {
-    s1 = s1.toLowerCase();
-    s2 = s2.toLowerCase();
+  function editDistance(s1 : string, s2: string) {
+    var string1 = s1.toLowerCase();
+    var string2 = s2.toLowerCase();
+    const matrix = [];
 
-    var costs = new Array();
-    for (var i = 0; i <= s1.length; i++) {
-      var lastValue = i;
-      for (var j = 0; j <= s2.length; j++) {
-        if (i == 0) costs[j] = j;
+    //init first column
+    for (let i = 0; i <= string2.length; i++){
+      matrix[i] = [i];
+    }
+
+    //init first row
+    for(let j = 0; j <= string1.length; j++ ){
+      matrix[0][j] = j;
+    }
+
+    //fill the rest of matrix from 3 matrix above left
+    for( let i = 1 ; i<= string2.length ; i++){
+      for( let j = 1; j <= string1.length ; j++){
+        if(string2.charAt(i-1) == string1.charAt(j-1)){
+          matrix[i][j] = matrix[i-1][j-1];
+        }
         else {
-          if (j > 0) {
-            var newValue = costs[j - 1];
-            if (s1.charAt(i - 1) != s2.charAt(j - 1))
-              newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-            costs[j - 1] = lastValue;
-            lastValue = newValue;
-          }
+          matrix[i][j] = Math.min(matrix[i-1][j-1], Math.min(matrix[i][j-1], matrix[i-1][j]))+1
         }
       }
-      if (i > 0) costs[s2.length] = lastValue;
     }
-    return costs[s2.length];
+
+    return matrix[string2.length][string1.length]
+  }
+
+  function KMPAlgorithm (pattern : string, text : string){
+    var patternFix = pattern.toLowerCase();
+    var textFix = text.toLowerCase();
+    var patternLength = patternFix.length;
+    var textLength = textFix.length;
+    var patternLPS = lpsArray(patternFix);
+    var flag = false;
+
+    var i = 0;
+    var j = -1;
+
+    while(i< textLength && !flag){
+      if(patternFix.charAt(j+1) == textFix.charAt(i)){
+        if(i+1 == textLength) {
+          flag = true;
+        }
+        j++;
+        i++;
+      }
+      else {
+        if(j==-1){
+          i++
+        }
+        else {
+          j = patternLPS[j+1]-1;
+        }
+      }
+    }
+    return flag;
+  }
+
+  function lpsArray (pattern : string){
+    var patternLength = pattern.length;
+    var flag = false;
+    var backTo = 0;
+    const patternChar = [];
+    const lpsArray = [];
+
+    for (let i = 0 ; i<patternLength ; i++){
+      patternChar[i] = pattern.charAt(i);
+    }
+
+    for(let j = 0 ; j<= patternLength ; j++){
+      if (j==0) {
+        lpsArray[j] = -1;
+        flag = false;
+        backTo = 0;
+      }
+      else if (j==1) {
+        lpsArray[j] = 0;
+        flag = false;
+        backTo = 0;
+      }
+      else {
+        for (let k = 0; k< j-1 ; k++){
+          if (patternChar[j-1] == patternChar[k]){
+            flag = true;
+            backTo++;
+            lpsArray[j] = backTo;
+            break
+          }
+          else {
+            flag = false;
+            lpsArray[j] = 0;
+          }
+        }
+        if (!flag){
+          backTo = 0;
+        }
+      }
+    }
+
+    return lpsArray;
+
   }
 
   const isCalculator = (s: string) => {
@@ -84,6 +166,26 @@ export default function Home() {
     }
   };
 
+  function isDate(s: string) {
+    const inputCleaned = s.replace(/\?/g, "");
+    const inputArr = inputCleaned.split(' ');
+    const dateString = inputArr[inputArr.length-1];
+    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    let match = dateString.match(dateRegex);
+    var flag;
+    var inputDate = 0;
+
+    if(!match || isNaN(Date.parse(match[3] + '-' + match[2] + '-' + match[1]))){
+      flag = false;
+    }
+    else {
+      flag = true;
+      inputDate = Date.parse(match[3] + '-' + match[2] + '-' + match[1]);
+    }
+
+    return {flag,inputDate};
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       // Submit form when Enter key is pressed and Shift key is not held down
@@ -93,12 +195,21 @@ export default function Home() {
 
   const submitQuestion = (e: FormEvent) => {
     e.preventDefault();
+    var percentageArray = [];
+    var idx = 0;
     if (question === "") {
       // Do nothing
     } else {
       setAfterAsk(true);
       let answer: string = "";
-      if (isCalculator(question)) {
+      var resultDate= isDate(question);
+      if (resultDate.flag){
+        var theDate = new Date(resultDate.inputDate);
+        var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        var result = days[theDate.getDay()];
+        answer = result;
+      }
+      else if (isCalculator(question)) {
         let expression = question;
         try {
           if (expression[expression.length - 1] === "?") {
@@ -109,20 +220,76 @@ export default function Home() {
           answer = "Sintaks persamaan tidak sesuai.";
         }
       } else {
-        let percentage: number = 0.0;
+        let found = false;
         for (let el of qna) {
-          let temp = similarity(
-            question.toLocaleLowerCase(),
-            el.question.toLocaleLowerCase()
-          );
-          if (temp > percentage) {
-            percentage = temp;
+          if (!found){
+            found = KMPAlgorithm(
+              question.toLocaleLowerCase(),
+              el.question.toLocaleLowerCase()   
+            );
+            }
+          if (found){
             answer = el.answer;
+            break;
           }
         }
-        if (percentage < 0.5) {
-          answer =
-            "Maaf, pertanyaan Anda tidak dapat dijawab karena tidak terdaftar.";
+        if (!found){
+
+          let percentage: number = 0.0;
+          for (let el of qna) {
+            let temp = similarity(
+              question.toLocaleLowerCase(),
+              el.question.toLocaleLowerCase()
+            );
+            var percentages = temp;
+            var percantageQuestion = el.question.toLocaleLowerCase() ;
+            var percentageArrayData = {percentages,percantageQuestion};
+            percentageArray[idx] = percentageArrayData;
+            idx++;
+            if (temp > percentage) {
+              percentage = temp;
+              if(percentage >= 0.9){
+                answer = el.answer;
+              }
+            }
+          }
+          if (percentage < 0.9 && percentage >= 0.5){
+            answer += "Pertanyaan tidak ditemukan di database. \n Apakah maksud Anda: \n ";
+            percentageArray.sort((a, b) => b.percentages - a.percentages);
+            if (qna.length < 3){
+              for (let i = 0; i < qna.length ; i++){
+                if (i != qna.length-1){
+                  if(percentageArray[i].percentages >= 0.5){
+                    answer += i.toString() + ". " + percentageArray[i].percantageQuestion + "\n";
+                  }
+                }
+                else {
+                  if(percentageArray[i].percentages >= 0.5) {
+                    answer += i.toString() + ". " + percentageArray[i].percantageQuestion;
+                  }
+                }
+              }
+            }
+            else {
+              for (let i = 0; i < 3 ; i++){
+                if (i != 2){
+                  if(percentageArray[i].percentages >= 0.5){
+                    answer += i.toString() + ". " + percentageArray[i].percantageQuestion + "\n";
+                  }
+                }
+                else {
+                  if(percentageArray[i].percentages >= 0.5){
+                    answer += i.toString() + ". " + percentageArray[i].percantageQuestion;
+                  }
+                }
+              }
+            }
+            
+          }
+          if (percentage < 0.5) {
+            answer =
+              "Maaf, pertanyaan Anda tidak dapat dijawab karena tidak terdaftar.";
+          }
         }
       }
       if (selectedHistory === 0) {
