@@ -1,10 +1,12 @@
 import Image from "next/image";
-import { Inter } from "next/font/google";
+import { QnA, DummyData } from "@/data/Data";
 import Head from "next/head";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Bot from "../public/img/bot.png";
 import { FormEvent, Ref, useEffect, useRef, useState } from "react";
 import { Typewriter } from "react-simple-typewriter";
+import Setting from "@/components/Setting";
+import Help from "@/components/Help";
 
 interface History {
   id: number;
@@ -20,12 +22,67 @@ interface Message {
 
 export default function Home() {
   const { data, status } = useSession();
+  const [algorithm, setAlgorithm] = useState("KMP");
+  const [qna, setQna] = useState<QnA[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedHistory, setSelectedHistory] = useState(0);
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<History[]>([]);
   const [message, setMessage] = useState<Message[]>([]);
   const [afterAsk, setAfterAsk] = useState(false);
+  const [openSetting, setOpenSetting] = useState(false);
+  const [openHelp, setOpenHelp] = useState(false);
+
+  // Algorithm Example
+  function similarity(s1: String, s2: String) {
+    var longer = s1;
+    var shorter = s2;
+    if (s1.length < s2.length) {
+      longer = s2;
+      shorter = s1;
+    }
+    var longerLength = longer.length;
+    if (longerLength == 0) {
+      return 1.0;
+    }
+    return (
+      (longerLength - editDistance(longer, shorter)) /
+      parseFloat(longerLength.toString())
+    );
+  }
+
+  function editDistance(s1: String, s2: String) {
+    s1 = s1.toLowerCase();
+    s2 = s2.toLowerCase();
+
+    var costs = new Array();
+    for (var i = 0; i <= s1.length; i++) {
+      var lastValue = i;
+      for (var j = 0; j <= s2.length; j++) {
+        if (i == 0) costs[j] = j;
+        else {
+          if (j > 0) {
+            var newValue = costs[j - 1];
+            if (s1.charAt(i - 1) != s2.charAt(j - 1))
+              newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+            costs[j - 1] = lastValue;
+            lastValue = newValue;
+          }
+        }
+      }
+      if (i > 0) costs[s2.length] = lastValue;
+    }
+    return costs[s2.length];
+  }
+
+  const isCalculator = (s: string) => {
+    const regexCalculator: RegExp = /^[()\d+\-*/\s]+(\?)?$/;
+    if (regexCalculator.test(s)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -40,6 +97,34 @@ export default function Home() {
       // Do nothing
     } else {
       setAfterAsk(true);
+      let answer: string = "";
+      if (isCalculator(question)) {
+        let expression = question;
+        try {
+          if (expression[expression.length - 1] === "?") {
+            expression = expression.slice(0, -1);
+          }
+          answer = "Hasilnya adalah " + eval(expression).toString();
+        } catch (e) {
+          answer = "Sintaks persamaan tidak sesuai.";
+        }
+      } else {
+        let percentage: number = 0.0;
+        for (let el of qna) {
+          let temp = similarity(
+            question.toLocaleLowerCase(),
+            el.question.toLocaleLowerCase()
+          );
+          if (temp > percentage) {
+            percentage = temp;
+            answer = el.answer;
+          }
+        }
+        if (percentage < 0.5) {
+          answer =
+            "Maaf, pertanyaan Anda tidak dapat dijawab karena tidak terdaftar.";
+        }
+      }
       if (selectedHistory === 0) {
         let newID = history.length + 1;
         const newHistory: History = {
@@ -54,7 +139,7 @@ export default function Home() {
         const temp: Message = {
           history_id: newID,
           user_message: question,
-          bot_message: "mana saya tahu, kok nanya saya",
+          bot_message: answer,
           timestamp: 1,
         };
         let tempMessages = [...message];
@@ -65,7 +150,7 @@ export default function Home() {
         const temp: Message = {
           history_id: selectedHistory,
           user_message: question,
-          bot_message: "mana saya tahu, kok nanya saya",
+          bot_message: answer,
           timestamp: 1,
         };
         let tempMessages = [...message];
@@ -75,6 +160,10 @@ export default function Home() {
       }
     }
   };
+
+  useEffect(() => {
+    setQna(DummyData);
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -113,7 +202,7 @@ export default function Home() {
                       onClick={() => {
                         setSelectedHistory(-1);
                         setAfterAsk(false);
-                        setTimeout(() => setSelectedHistory(e.id), 500);
+                        setTimeout(() => setSelectedHistory(e.id), 300);
                       }}
                     >
                       {e.name}
@@ -121,13 +210,25 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="flex flex-col border-t-2">
-                  <div className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer">
+                  <div
+                    className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => {
+                      setHistory([]);
+                      setMessage([]);
+                    }}
+                  >
                     Clear conversation
                   </div>
-                  <div className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer">
+                  <div
+                    className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => setOpenSetting(true)}
+                  >
                     Settings
                   </div>
-                  <div className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer">
+                  <div
+                    className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => setOpenHelp(true)}
+                  >
                     Get help
                   </div>
                   <div
@@ -153,14 +254,31 @@ export default function Home() {
                     <div className="flex flex-col gap-4 text-xl w-full">
                       <h3>Examples</h3>
                       <div className="flex flex-col gap-4 px-4">
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
+                        <div
+                          className="bg-gray-800 text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
+                          onClick={(e) => {
+                            setQuestion("Apa ibukota negara Indonesia?");
+                          }}
+                        >
                           {"Apa ibukota negara Indonesia?"}
                         </div>
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
-                          {"Berapa 9 + 10?"}
+                        <div
+                          className="bg-gray-800 text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
+                          onClick={(e) => {
+                            setQuestion("9 + 10?");
+                          }}
+                        >
+                          {"9 + 10?"}
                         </div>
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
-                          {"Makanan terenak di dunia?"}
+                        <div
+                          className="bg-gray-800 text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
+                          onClick={(e) => {
+                            setQuestion(
+                              "Apa mata kuliah IF semester 4 yang paling seru?"
+                            );
+                          }}
+                        >
+                          {"Apa mata kuliah IF semester 4 yang paling seru?"}
                         </div>
                       </div>
                     </div>
@@ -235,6 +353,7 @@ export default function Home() {
                                   <Typewriter
                                     words={[e.bot_message]}
                                     cursorBlinking={false}
+                                    typeSpeed={50}
                                   />
                                 ) : (
                                   <p>{e.bot_message}</p>
@@ -268,8 +387,24 @@ export default function Home() {
                 </form>
               </div>
             </div>
+            {openSetting ? (
+              <Setting
+                setAlgorithm={setAlgorithm}
+                setOpenSetting={setOpenSetting}
+                algorithm={algorithm}
+              />
+            ) : openHelp ? (
+              <Help setOpenHelp={setOpenHelp} />
+            ) : (
+              <></>
+            )}
           </div>
         </main>
+        {openSetting || openHelp ? (
+          <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50"></div>
+        ) : (
+          <></>
+        )}
       </>
     );
   }
