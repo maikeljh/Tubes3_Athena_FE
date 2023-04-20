@@ -8,6 +8,7 @@ export const authOptions:AuthOptions = {
    clientSecret: process.env.GOOGLE_SECRET as string,
   }),
  ],
+ secret: process.env.MY_SECRET_ENV_VARIABLE,
  session: {
   strategy: 'jwt',
  },
