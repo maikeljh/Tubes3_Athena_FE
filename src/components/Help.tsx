@@ -9,7 +9,7 @@ const Help = ({
 }) => {
   return (
     <>
-      <div className="fixed z-[99999] bg-gray-400 rounded-2xl shadow-xl p-6 text-black w-1/2 flex flex-col gap-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      <div className="fixed z-[99999] bg-gray-400 rounded-2xl shadow-xl p-6 text-black w-4/5 md:w-[24rem] flex flex-col gap-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <div className="flex flex-row items-center relative">
           <h1 className="text-2xl font-bold text-center mx-auto">Help</h1>
           <Image
@@ -20,7 +20,7 @@ const Help = ({
             onClick={() => setOpenHelp(false)}
           />
         </div>
-        <div className="flex flex-col gap-4 mx-auto text-xl font-semibold">
+        <div className="flex flex-col gap-4 mx-auto text-[12px] md:text-xl font-semibold">
           <p>1. Type a question in the message box to ask questions.</p>
           <p>
             2. Login to another account by pressing the log out button if you

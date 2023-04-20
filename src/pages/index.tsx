@@ -7,7 +7,7 @@ import { FormEvent, Ref, useEffect, useRef, useState } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Setting from "@/components/Setting";
 import Help from "@/components/Help";
-import { FaArrowDown } from "react-icons/fa";
+import { FaArrowDown, FaPlus, FaBars, FaWindowClose } from "react-icons/fa";
 
 interface History {
   id: number;
@@ -34,6 +34,7 @@ export default function Home() {
   const [openSetting, setOpenSetting] = useState(false);
   const [openHelp, setOpenHelp] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [openSidebar, setOpenSidebar] = useState(false);
 
   // Algorithm
   function similarity(s1: string, s2: string) {
@@ -154,7 +155,7 @@ export default function Home() {
   }
 
   const isCalculator = (s: string) => {
-    const regexCalculator: RegExp = /^[()\d+\-*/\s]+(\?)?$/;
+    const regexCalculator: RegExp = /^[()\d+\-*/.\s]+(\?)?$/;
     if (regexCalculator.test(s)) {
       return true;
     } else {
@@ -345,6 +346,14 @@ export default function Home() {
         window.innerHeight + window.scrollY - document.body.offsetHeight;
       setIsAtBottom(scrollPosition > -50);
     };
+
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setOpenSidebar(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
     window.addEventListener("scroll", handleScroll);
   }, []);
 
@@ -371,14 +380,44 @@ export default function Home() {
           <title>Athena</title>
         </Head>
         <main className="text-white">
-          <div className="flex flex-row">
-            <div className="w-1/5 fixed left-0 top-0">
+          <nav className="absolute sticky top-0 w-full md:hidden bg-gray-800 flex flex-row p-4 z-[999] items-center">
+            <div
+              className="flex-none"
+              onClick={() => setOpenSidebar(!openSidebar)}
+            >
+              <FaBars className="mr-auto" />
+            </div>
+            <h1 className="text-center flex-1">
+              {selectedHistory === 0 || selectedHistory === -1
+                ? "New Chat"
+                : `${history[selectedHistory - 1].name}`}
+            </h1>
+            <div className="flex-none" onClick={() => setSelectedHistory(0)}>
+              <FaPlus className="ml-auto" />
+            </div>
+          </nav>
+          <div className="md:flex md:flex-row">
+            <div
+              className={`md:hidden min-w-[12rem] w-3/5 md:w-1/5 fixed top-0 left-0 z-[9999] transition-transform duration-500 ${
+                openSidebar ? "transform translate-x-0" : "-translate-x-full"
+              }`}
+            >
               <div className="bg-gray-800 h-[100vh] flex flex-col">
-                <div
-                  className="border-[1px] border-gray rounded-xl p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
-                  onClick={() => setSelectedHistory(0)}
-                >
-                  + New Chat
+                <div className="flex flex-row items-center">
+                  <div
+                    className="w-full border-[1px] border-gray rounded-xl p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => {
+                      setSelectedHistory(0);
+                      setOpenSidebar(false);
+                    }}
+                  >
+                    + New Chat
+                  </div>
+                  <FaWindowClose
+                    className="mx-4 md:mx-0 md:hidden"
+                    size={40}
+                    onClick={() => setOpenSidebar(false)}
+                  />
                 </div>
                 <div className="min-h-[50%] h-full flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700">
                   {history.map((e: History, i) => (
@@ -389,6 +428,7 @@ export default function Home() {
                         setSelectedHistory(-1);
                         setAfterAsk(false);
                         setTimeout(() => setSelectedHistory(e.id), 300);
+                        setOpenSidebar(false);
                       }}
                     >
                       {e.name}
@@ -401,47 +441,131 @@ export default function Home() {
                     onClick={() => {
                       setHistory([]);
                       setMessage([]);
+                      setSelectedHistory(0);
+                      setOpenSidebar(false);
                     }}
                   >
                     Clear conversation
                   </div>
                   <div
                     className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
-                    onClick={() => setOpenSetting(true)}
+                    onClick={() => {
+                      setOpenSetting(true);
+                      setOpenSidebar(false);
+                    }}
                   >
                     Settings
                   </div>
                   <div
                     className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
-                    onClick={() => setOpenHelp(true)}
+                    onClick={() => {
+                      setOpenHelp(true);
+                      setOpenSidebar(false);
+                    }}
                   >
                     Get help
                   </div>
                   <div
                     className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
-                    onClick={() => signOut()}
+                    onClick={() => {
+                      signOut();
+                      setOpenSidebar(false);
+                    }}
                   >
                     Log out
                   </div>
                 </div>
               </div>
             </div>
-            <div className="ml-[20%] w-4/5 relative bg-gray-600 min-h-[100vh]">
+            <div
+              className={`hidden md:block min-w-[12rem] w-1/5 fixed top-0 left-0 z-[9999]`}
+            >
+              <div className="bg-gray-800 h-[100vh] flex flex-col">
+                <div className="flex flex-row items-center">
+                  <div
+                    className="w-full border-[1px] border-gray rounded-xl p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => {
+                      setSelectedHistory(0);
+                      setOpenSidebar(false);
+                    }}
+                  >
+                    + New Chat
+                  </div>
+                </div>
+                <div className="min-h-[50%] h-full flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700">
+                  {history.map((e: History, i) => (
+                    <span
+                      className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                      key={i}
+                      onClick={() => {
+                        setSelectedHistory(-1);
+                        setAfterAsk(false);
+                        setTimeout(() => setSelectedHistory(e.id), 300);
+                        setOpenSidebar(false);
+                      }}
+                    >
+                      {e.name}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex flex-col border-t-2">
+                  <div
+                    className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => {
+                      setHistory([]);
+                      setMessage([]);
+                      setSelectedHistory(0);
+                      setOpenSidebar(false);
+                    }}
+                  >
+                    Clear conversation
+                  </div>
+                  <div
+                    className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => {
+                      setOpenSetting(true);
+                      setOpenSidebar(false);
+                    }}
+                  >
+                    Settings
+                  </div>
+                  <div
+                    className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => {
+                      setOpenHelp(true);
+                      setOpenSidebar(false);
+                    }}
+                  >
+                    Get help
+                  </div>
+                  <div
+                    className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
+                    onClick={() => {
+                      signOut();
+                      setOpenSidebar(false);
+                    }}
+                  >
+                    Log out
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="md:ml-[20%] md:w-4/5 relative bg-gray-600 min-h-[100vh]">
               {selectedHistory == -1 ? (
                 <div className="min-h-[100vh] bg-gray-700"></div>
               ) : selectedHistory == 0 ||
                 message.filter((el) => el.history_id === selectedHistory)
                   .length === 0 ? (
-                <div className="flex flex-col gap-10 px-10">
+                <div className="flex flex-col gap-10 md:px-10">
                   <h2 className="text-white text-5xl mx-auto font-semibold pt-24">
                     Athena
                   </h2>
-                  <div className="flex flex-row gap-8 mx-auto text-center">
+                  <div className="flex flex-col md:flex-row gap-8 mx-auto text-center">
                     <div className="flex flex-col gap-4 text-xl w-full">
                       <h3>Examples</h3>
-                      <div className="flex flex-col gap-4 px-4">
+                      <div className="flex flex-col gap-2 md:gap-4 px-4">
                         <div
-                          className="bg-gray-800 text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
+                          className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
                           onClick={(e) => {
                             setQuestion("Apa ibukota negara Indonesia?");
                           }}
@@ -449,7 +573,7 @@ export default function Home() {
                           {"Apa ibukota negara Indonesia?"}
                         </div>
                         <div
-                          className="bg-gray-800 text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
+                          className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
                           onClick={(e) => {
                             setQuestion("9 + 10?");
                           }}
@@ -457,7 +581,7 @@ export default function Home() {
                           {"9 + 10?"}
                         </div>
                         <div
-                          className="bg-gray-800 text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
+                          className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl hover:bg-gray-900 hover:cursor-pointer"
                           onClick={(e) => {
                             setQuestion(
                               "Apa mata kuliah IF semester 4 yang paling seru?"
@@ -470,30 +594,30 @@ export default function Home() {
                     </div>
                     <div className="flex flex-col gap-4 text-xl w-full">
                       <h3 className="text-center">Capabilities</h3>
-                      <div className="flex flex-col gap-4 px-4">
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
+                      <div className="flex flex-col gap-2 md:gap-4 px-4">
+                        <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
                           {"Melakukan operasi kalkulator"}
                         </div>
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
+                        <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
                           {
                             "Menjawab pertanyaan secara umum sesuai pertanyaan yang terdaftar"
                           }
                         </div>
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
+                        <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
                           {"Mendaftarkan pertanyaan dan jawaban baru dari Anda"}
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col gap-4 text-xl w-full">
                       <h3 className="text-center">Limitations</h3>
-                      <div className="flex flex-col gap-4 px-4">
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
+                      <div className="flex flex-col gap-2 md:gap-4 px-4">
+                        <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
                           {"Kosakata yang digunakan terbatas"}
                         </div>
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
+                        <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
                           {"Pertanyaan yang bisa dijawab masih sangat terbatas"}
                         </div>
-                        <div className="bg-gray-800 text-lg mx-auto p-4 rounded-xl">
+                        <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
                           {"Hanya bahasa Indonesia"}
                         </div>
                       </div>
@@ -510,7 +634,7 @@ export default function Home() {
                           .filter((el) => el.history_id === selectedHistory)
                           .map((e, i) => (
                             <div key={i}>
-                              <div className="p-8 px-48 flex flex-row gap-8">
+                              <div className="py-8 px-4 sm:p-8 md:px-20 lg:px-24 xl:px-48 flex flex-row gap-4 sm:gap-8">
                                 <div className="flex-shrink-0">
                                   <Image
                                     src={data.user?.image || Bot}
@@ -523,7 +647,7 @@ export default function Home() {
                                   {e.user_message}
                                 </pre>
                               </div>
-                              <div className="p-8 px-48 flex flex-row gap-8 bg-gray-600">
+                              <div className="py-8 px-4 sm:p-8 md:px-20 lg:px-24 xl:px-48 flex flex-row gap-4 sm:gap-8 bg-gray-600">
                                 <div className="flex-shrink-0">
                                   <Image
                                     src={Bot}
@@ -572,9 +696,9 @@ export default function Home() {
                   </div>
                 </>
               )}
-              <div className="fixed bottom-4 w-4/5">
+              <div className="fixed bottom-0 md:bottom-4 w-full md:w-4/5">
                 <form
-                  className="w-2/3 mx-auto"
+                  className="px-4 md:px-0 md:w-2/3 mx-auto"
                   onSubmit={(e) => submitQuestion(e)}
                 >
                   <textarea
@@ -603,7 +727,7 @@ export default function Home() {
             )}
           </div>
           <div
-            className={`fixed bottom-28 right-5 rounded-[50%] border-2 p-2 opacity-50 bg-gray-800 ${
+            className={`fixed bottom-28 right-5 rounded-[50%] border-2 p-2 opacity-50 bg-gray-800 hover:cursor-pointer ${
               isAtBottom ? "hidden" : ""
             }`}
             onClick={() => scrollToBottom()}
@@ -611,8 +735,8 @@ export default function Home() {
             <FaArrowDown />
           </div>
         </main>
-        {openSetting || openHelp ? (
-          <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50"></div>
+        {openSetting || openHelp || openSidebar ? (
+          <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[999]"></div>
         ) : (
           <></>
         )}
