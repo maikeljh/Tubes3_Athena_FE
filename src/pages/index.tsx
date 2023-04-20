@@ -164,7 +164,7 @@ export default function Home() {
   };
 
   function isDate(s: string) {
-    const inputCleaned = s.replace(/\?/g, "");
+    const inputCleaned = s.replace(/(?: \?|\?)*/g, "").replace(/\s+$/, "");
     const inputArr = inputCleaned.split(" ");
     const dateString = inputArr[inputArr.length - 1];
     const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
@@ -184,6 +184,24 @@ export default function Home() {
 
     return { flag, inputDate };
   }
+
+  const isDelete = (s: string) => {
+    const regexDelete: RegExp = /^(Hapus pertanyaan)/;
+    if (regexDelete.test(s)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const isAdd = (s: string) => {
+    const regexAdd: RegExp = /^Tambahkan pertanyaan .+ dengan jawaban .+$/;
+    if (regexAdd.test(s)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -224,6 +242,66 @@ export default function Home() {
           answer = "Hasilnya adalah " + eval(expression).toString();
         } catch (e) {
           answer = "Sintaks persamaan tidak sesuai.";
+        }
+      } else if (isDelete(question)) {
+        let regexQuestion = /^Hapus pertanyaan\s+(.*)$/;
+        let deleteQuestion = question.match(regexQuestion) as RegExpMatchArray;
+        let found = false;
+        for (let el of qna) {
+          if (!found) {
+            found = KMPAlgorithm(
+              deleteQuestion[1].toLocaleLowerCase(),
+              el.question.toLocaleLowerCase()
+            );
+          }
+          if (found) {
+            answer = el.answer;
+            break;
+          }
+        }
+        if (found) {
+          let index = qna.map((e) => e.question).indexOf(deleteQuestion[1]);
+          let temp = [...qna];
+          temp.splice(index, 1);
+          setQna(temp);
+          answer = "Pertanyaan " + deleteQuestion[1] + " telah dihapus";
+        } else {
+          answer =
+            "Tidak ada pertanyaan " + deleteQuestion[1] + " pada database!";
+        }
+      } else if (isAdd(question)) {
+        let regexQuestion = /^Tambahkan pertanyaan (.+) dengan jawaban (.+)$/;
+        let addQuestion = question.match(regexQuestion) as RegExpMatchArray;
+        let found = false;
+        for (let el of qna) {
+          if (!found) {
+            found = KMPAlgorithm(
+              addQuestion[1].toLocaleLowerCase(),
+              el.question.toLocaleLowerCase()
+            );
+          }
+          if (found) {
+            answer = el.answer;
+            break;
+          }
+        }
+        if (found) {
+          let index = qna.map((e) => e.question).indexOf(addQuestion[1]);
+          let temp = [...qna];
+          temp.splice(index, 1);
+          temp.push({ question: addQuestion[1], answer: addQuestion[2] });
+          setQna(temp);
+          answer =
+            "Pertanyaan " +
+            addQuestion[1] +
+            " sudah ada! Jawaban di-update ke " +
+            addQuestion[2];
+        } else {
+          answer =
+            "Pertanyaan " + addQuestion[1] + " telah ditambah ke database!";
+          let temp = [...qna];
+          temp.push({ question: addQuestion[1], answer: addQuestion[2] });
+          setQna(temp);
         }
       } else {
         let found = false;
