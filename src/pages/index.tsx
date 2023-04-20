@@ -7,6 +7,7 @@ import { FormEvent, Ref, useEffect, useRef, useState } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Setting from "@/components/Setting";
 import Help from "@/components/Help";
+import { FaArrowDown } from "react-icons/fa";
 
 interface History {
   id: number;
@@ -32,9 +33,9 @@ export default function Home() {
   const [afterAsk, setAfterAsk] = useState(false);
   const [openSetting, setOpenSetting] = useState(false);
   const [openHelp, setOpenHelp] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
 
-  // Algorithm Example
-
+  // Algorithm
   function similarity(s1: string, s2: string) {
     var result;
 
@@ -338,6 +339,22 @@ export default function Home() {
     setQna(DummyData);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition =
+        window.innerHeight + window.scrollY - document.body.offsetHeight;
+      setIsAtBottom(scrollPosition > -50);
+    };
+    window.addEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const scrollPosition =
+      window.innerHeight + window.scrollY - document.body.offsetHeight;
+    setIsAtBottom(scrollPosition > -50);
+    scrollToBottom();
+  }, [selectedHistory]);
+
   // Scroll to the bottom of the chat window
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -493,7 +510,7 @@ export default function Home() {
                           .filter((el) => el.history_id === selectedHistory)
                           .map((e, i) => (
                             <div key={i}>
-                              <div className="p-8 px-40 flex flex-row gap-8">
+                              <div className="p-8 px-48 flex flex-row gap-8">
                                 <div className="flex-shrink-0">
                                   <Image
                                     src={data.user?.image || Bot}
@@ -506,7 +523,7 @@ export default function Home() {
                                   {e.user_message}
                                 </pre>
                               </div>
-                              <div className="p-8 px-40 flex flex-row gap-8 bg-gray-600">
+                              <div className="p-8 px-48 flex flex-row gap-8 bg-gray-600">
                                 <div className="flex-shrink-0">
                                   <Image
                                     src={Bot}
@@ -535,14 +552,6 @@ export default function Home() {
                                           document.body.scrollHeight
                                         ) {
                                           scrollToBottom();
-                                        } else {
-                                          console.log(
-                                            Math.ceil(
-                                              window.innerHeight +
-                                                window.scrollY
-                                            ),
-                                            document.body.scrollHeight
-                                          );
                                         }
                                       }}
                                     />
@@ -592,6 +601,14 @@ export default function Home() {
             ) : (
               <></>
             )}
+          </div>
+          <div
+            className={`fixed bottom-28 right-5 rounded-[50%] border-2 p-2 opacity-50 bg-gray-800 ${
+              isAtBottom ? "hidden" : ""
+            }`}
+            onClick={() => scrollToBottom()}
+          >
+            <FaArrowDown />
           </div>
         </main>
         {openSetting || openHelp ? (
