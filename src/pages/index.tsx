@@ -372,7 +372,13 @@ export default function Home() {
   };
 
   if (status === "loading")
-    return <h1 className="text-black">Loading... please wait</h1>;
+    return (
+      <div className="flex mx-auto bg-gray-800 text-white h-[100vh]">
+        <h1 className="text-4xl text-center mt-40 font-bold">
+          Loading... Please Wait
+        </h1>
+      </div>
+    );
   if (status === "authenticated") {
     return (
       <>
