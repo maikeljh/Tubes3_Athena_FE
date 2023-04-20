@@ -245,7 +245,7 @@ export default function Home() {
               el.question.toLocaleLowerCase()
             );
             var percentages = temp;
-            var percantageQuestion = el.question.toLocaleLowerCase();
+            var percantageQuestion = el.question;
             var percentageArrayData = { percentages, percantageQuestion };
             percentageArray[idx] = percentageArrayData;
             idx++;
@@ -256,53 +256,41 @@ export default function Home() {
               }
             }
           }
-          if (percentage < 0.9 && percentage >= 0.5) {
+          if (percentage < 0.9) {
             answer +=
-              "Pertanyaan tidak ditemukan di database. \n Apakah maksud Anda: \n ";
+              "Pertanyaan tidak ditemukan di database.\nApakah maksud Anda:\n";
             percentageArray.sort((a, b) => b.percentages - a.percentages);
             if (qna.length < 3) {
               for (let i = 0; i < qna.length; i++) {
                 if (i != qna.length - 1) {
-                  if (percentageArray[i].percentages >= 0.5) {
-                    answer +=
-                      i.toString() +
-                      ". " +
-                      percentageArray[i].percantageQuestion +
-                      "\n";
-                  }
+                  answer +=
+                    (i + 1).toString() +
+                    ". " +
+                    percentageArray[i].percantageQuestion +
+                    "\n";
                 } else {
-                  if (percentageArray[i].percentages >= 0.5) {
-                    answer +=
-                      i.toString() +
-                      ". " +
-                      percentageArray[i].percantageQuestion;
-                  }
+                  answer +=
+                    (i + 1).toString() +
+                    ". " +
+                    percentageArray[i].percantageQuestion;
                 }
               }
             } else {
               for (let i = 0; i < 3; i++) {
                 if (i != 2) {
-                  if (percentageArray[i].percentages >= 0.5) {
-                    answer +=
-                      i.toString() +
-                      ". " +
-                      percentageArray[i].percantageQuestion +
-                      "\n";
-                  }
+                  answer +=
+                    (i + 1).toString() +
+                    ". " +
+                    percentageArray[i].percantageQuestion +
+                    "\n";
                 } else {
-                  if (percentageArray[i].percentages >= 0.5) {
-                    answer +=
-                      i.toString() +
-                      ". " +
-                      percentageArray[i].percantageQuestion;
-                  }
+                  answer +=
+                    (i + 1).toString() +
+                    ". " +
+                    percentageArray[i].percantageQuestion;
                 }
               }
             }
-          }
-          if (percentage < 0.5) {
-            answer =
-              "Maaf, pertanyaan Anda tidak dapat dijawab karena tidak terdaftar.";
           }
         }
       }
@@ -343,12 +331,12 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setQna(DummyData);
-  }, []);
-
-  useEffect(() => {
     scrollToBottom();
   }, [message]);
+
+  useEffect(() => {
+    setQna(DummyData);
+  }, []);
 
   // Scroll to the bottom of the chat window
   const scrollToBottom = () => {
@@ -514,7 +502,9 @@ export default function Home() {
                                     height={30}
                                   />
                                 </div>
-                                <p>{e.user_message}</p>
+                                <pre className="whitespace-pre-wrap">
+                                  {e.user_message}
+                                </pre>
                               </div>
                               <div className="p-8 px-40 flex flex-row gap-8 bg-gray-600">
                                 <div className="flex-shrink-0">
@@ -531,13 +521,36 @@ export default function Home() {
                                     (el) => el.history_id === selectedHistory
                                   ).length -
                                     1 ? (
-                                  <Typewriter
-                                    words={[e.bot_message]}
-                                    cursorBlinking={false}
-                                    typeSpeed={50}
-                                  />
+                                  <pre className="whitespace-pre-wrap">
+                                    <Typewriter
+                                      words={[e.bot_message]}
+                                      cursorBlinking={false}
+                                      typeSpeed={40}
+                                      onType={() => {
+                                        if (
+                                          Math.ceil(
+                                            window.innerHeight + window.scrollY
+                                          ) +
+                                            50 >
+                                          document.body.scrollHeight
+                                        ) {
+                                          scrollToBottom();
+                                        } else {
+                                          console.log(
+                                            Math.ceil(
+                                              window.innerHeight +
+                                                window.scrollY
+                                            ),
+                                            document.body.scrollHeight
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  </pre>
                                 ) : (
-                                  <p>{e.bot_message}</p>
+                                  <pre className="whitespace-pre-wrap">
+                                    {e.bot_message}
+                                  </pre>
                                 )}
                               </div>
                             </div>
