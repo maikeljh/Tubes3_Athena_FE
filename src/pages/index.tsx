@@ -166,7 +166,7 @@ export default function Home() {
     const inputCleaned = s.replace(/\?/g, "");
     const inputArr = inputCleaned.split(" ");
     const dateString = inputArr[inputArr.length - 1];
-    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
     let match = dateString.match(dateRegex);
     var flag;
     var inputDate = 0;
