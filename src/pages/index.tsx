@@ -391,15 +391,25 @@ export default function Home() {
               className="flex-none"
               onClick={() => setOpenSidebar(!openSidebar)}
             >
-              <FaBars className="mr-auto" />
+              <FaBars className="mr-auto hover:cursor-pointer" />
             </div>
             <h1 className="text-center flex-1">
               {selectedHistory === 0 || selectedHistory === -1
                 ? "New Chat"
                 : `${history[selectedHistory - 1].name}`}
             </h1>
-            <div className="flex-none" onClick={() => setSelectedHistory(0)}>
-              <FaPlus className="ml-auto" />
+            <div
+              className="flex-none"
+              onClick={() => {
+                setSelectedHistory(0);
+                window.scrollTo({
+                  top: 0,
+                  left: 0,
+                  behavior: "smooth",
+                });
+              }}
+            >
+              <FaPlus className="ml-auto hover:cursor-pointer" />
             </div>
           </nav>
           <div className="md:flex md:flex-row">
@@ -414,13 +424,18 @@ export default function Home() {
                     className="w-full border-[1px] border-gray rounded-xl p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
                     onClick={() => {
                       setSelectedHistory(0);
+                      window.scrollTo({
+                        top: 0,
+                        left: 0,
+                        behavior: "smooth",
+                      });
                       setOpenSidebar(false);
                     }}
                   >
                     + New Chat
                   </div>
                   <FaWindowClose
-                    className="mx-4 md:mx-0 md:hidden"
+                    className="mx-4 md:mx-0 md:hidden hover:cursor-pointer"
                     size={40}
                     onClick={() => setOpenSidebar(false)}
                   />
@@ -449,6 +464,11 @@ export default function Home() {
                       setMessage([]);
                       setSelectedHistory(0);
                       setOpenSidebar(false);
+                      window.scrollTo({
+                        top: 0,
+                        left: 0,
+                        behavior: "smooth",
+                      });
                     }}
                   >
                     Clear conversation
@@ -492,6 +512,11 @@ export default function Home() {
                     className="w-full border-[1px] border-gray rounded-xl p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
                     onClick={() => {
                       setSelectedHistory(0);
+                      window.scrollTo({
+                        top: 0,
+                        left: 0,
+                        behavior: "smooth",
+                      });
                       setOpenSidebar(false);
                     }}
                   >
@@ -521,6 +546,11 @@ export default function Home() {
                       setHistory([]);
                       setMessage([]);
                       setSelectedHistory(0);
+                      window.scrollTo({
+                        top: 0,
+                        left: 0,
+                        behavior: "smooth",
+                      });
                       setOpenSidebar(false);
                     }}
                   >
