@@ -373,8 +373,8 @@ export default function Home() {
 
   if (status === "loading")
     return (
-      <div className="flex mx-auto bg-gray-800 text-white h-[100vh]">
-        <h1 className="text-4xl text-center mt-40 font-bold">
+      <div className="mx-auto bg-gray-800 text-white h-[100vh] text-center">
+        <h1 className="text-4xl text-center font-bold pt-40">
           Loading... Please Wait
         </h1>
       </div>
