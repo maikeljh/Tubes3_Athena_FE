@@ -83,6 +83,7 @@ export default function Home() {
 
     return matrix[string2.length][string1.length];
   }
+  
 
   function BMAlgorithm(pattern : string, text: string){
     var patternFix = pattern.toLowerCase();
@@ -95,29 +96,23 @@ export default function Home() {
     var j = patternLength-1;
     var flag = false;
     var found;
-    var count;
-    var goodSuffix = []
+    var count = 0;
     var jump;
-    var tempCount = 0;
-    var m = 0;
     var total = 0;
 
-    while(i<textLength && !flag && patternLength == textLength){
-      count = 0
+    while(i<textLength && !flag){
       jump = 0
       if(patternFix.charAt(j)==textFix.charAt(i)){
         total++;
         if ( total == pattern.length) {
           flag = true;
         }
-        goodSuffix[0] = patternFix.charAt(j);
         j--;
         i--;
         count++;
       }
       else {
         total = 0;
-        i += count;
         found = false;
         for(let k = 0; k < badTableLength ; k++){
           if (badMatchTable.patternChar[k] == textFix.charAt(i)){
@@ -133,20 +128,7 @@ export default function Home() {
             jump =badMatchTable.badTable[badTableLength-1];
           }
         }
-        for ( let l = patternLength - count; l >= 0 ; l--){
-          if (m < goodSuffix.length){
-            if(goodSuffix[m] == patternFix.charAt(l)){
-              tempCount++;
-              if(tempCount > jump){
-                jump = tempCount;
-              }
-            }
-            else {
-              tempCount = 0;
-            }
-            m++;
-          }
-        }
+        i += count;
         i += jump;
       }
     }
@@ -164,18 +146,19 @@ export default function Home() {
       flag = false;
       for (let j = 0 ; j < i ; j++){
         if (pattern.charAt(i) == patternChar[j]){
+          badTable[j] = Math.max(1, patternLength - i -1);
           flag = true;
           break
         }
       }
       if(!flag) {
         patternChar[k] = pattern.charAt(i);
-        badTable[k] = Math.max(1,patternLength - k - 1);
+        badTable[k] = Math.max(1,patternLength - i - 1);
         k++;
       }
     }
-    patternChar[k+1] = "*";
-    badTable[k+1] = patternLength;
+    patternChar[k] = "*";
+    badTable[k] = patternLength;
 
     return {badTable,patternChar};
   }
@@ -413,13 +396,13 @@ export default function Home() {
         let found = false;
         for (let el of qna) {
           if (!found) {
-            found = KMPAlgorithm(
+            found = BMAlgorithm(
               question.toLocaleLowerCase(),
               el.question.toLocaleLowerCase()
             );
           }
           if (found) {
-            answer = el.answer;
+            answer = el.answer + "1";
             break;
           }
         }
