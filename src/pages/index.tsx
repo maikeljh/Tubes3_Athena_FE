@@ -178,8 +178,18 @@ export default function Home() {
     ) {
       flag = false;
     } else {
-      flag = true;
-      inputDate = Date.parse(match[3] + "-" + match[2] + "-" + match[1]);
+      const year = parseInt(match[3]);
+      const month = parseInt(match[2]);
+      const day = parseInt(match[1]);
+      const lastDay = new Date(year, month, 0).getDate();
+
+      if(day > lastDay){
+        flag = false;
+      }
+      else {
+        flag = true;
+        inputDate = Date.parse(match[3] + "-" + match[2] + "-" + match[1]);
+      }
     }
 
     return { flag, inputDate };
