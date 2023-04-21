@@ -7,7 +7,13 @@ import { FormEvent, Ref, useEffect, useRef, useState } from "react";
 import { Typewriter } from "react-simple-typewriter";
 import Setting from "@/components/Setting";
 import Help from "@/components/Help";
-import { FaArrowDown, FaPlus, FaBars, FaWindowClose } from "react-icons/fa";
+import {
+  FaArrowDown,
+  FaPlus,
+  FaBars,
+  FaWindowClose,
+  FaTelegramPlane,
+} from "react-icons/fa";
 
 interface History {
   id: number;
@@ -83,49 +89,47 @@ export default function Home() {
 
     return matrix[string2.length][string1.length];
   }
-  
 
-  function BMAlgorithm(pattern : string, text: string){
+  function BMAlgorithm(pattern: string, text: string) {
     var patternFix = pattern.toLowerCase();
     var textFix = text.toLowerCase();
     var patternLength = patternFix.length;
     var textLength = textFix.length;
     var badMatchTable = badMatch(patternFix);
     var badTableLength = badMatchTable.badTable.length;
-    var i = patternLength-1;
-    var j = patternLength-1;
+    var i = patternLength - 1;
+    var j = patternLength - 1;
     var flag = false;
     var found;
     var count = 0;
     var jump;
     var total = 0;
 
-    while(i<textLength && !flag){
-      jump = 0
-      if(patternFix.charAt(j)==textFix.charAt(i)){
+    while (i < textLength && !flag) {
+      jump = 0;
+      if (patternFix.charAt(j) == textFix.charAt(i)) {
         total++;
-        if ( total == pattern.length) {
+        if (total == pattern.length) {
           flag = true;
         }
         j--;
         i--;
         count++;
-      }
-      else {
+      } else {
         total = 0;
         found = false;
-        for(let k = 0; k < badTableLength ; k++){
-          if (badMatchTable.patternChar[k] == textFix.charAt(i)){
-            if(badMatchTable.badTable[k]>jump){
-              jump= badMatchTable.badTable[k];
+        for (let k = 0; k < badTableLength; k++) {
+          if (badMatchTable.patternChar[k] == textFix.charAt(i)) {
+            if (badMatchTable.badTable[k] > jump) {
+              jump = badMatchTable.badTable[k];
             }
             found = true;
             break;
           }
         }
-        if (!found){
-          if(badMatchTable.badTable[badTableLength-1]>jump){
-            jump =badMatchTable.badTable[badTableLength-1];
+        if (!found) {
+          if (badMatchTable.badTable[badTableLength - 1] > jump) {
+            jump = badMatchTable.badTable[badTableLength - 1];
           }
         }
         i += count;
@@ -135,32 +139,32 @@ export default function Home() {
     return flag;
   }
 
-  function badMatch(pattern : string){
+  function badMatch(pattern: string) {
     var patternLength = pattern.length;
     var flag;
     var k = 0;
-    var patternChar = []
-    var badTable = []
+    var patternChar = [];
+    var badTable = [];
 
     for (let i = 0; i < patternLength; i++) {
       flag = false;
-      for (let j = 0 ; j < i ; j++){
-        if (pattern.charAt(i) == patternChar[j]){
-          badTable[j] = Math.max(1, patternLength - i -1);
+      for (let j = 0; j < i; j++) {
+        if (pattern.charAt(i) == patternChar[j]) {
+          badTable[j] = Math.max(1, patternLength - i - 1);
           flag = true;
-          break
+          break;
         }
       }
-      if(!flag) {
+      if (!flag) {
         patternChar[k] = pattern.charAt(i);
-        badTable[k] = Math.max(1,patternLength - i - 1);
+        badTable[k] = Math.max(1, patternLength - i - 1);
         k++;
       }
     }
     patternChar[k] = "*";
     badTable[k] = patternLength;
 
-    return {badTable,patternChar};
+    return { badTable, patternChar };
   }
 
   function KMPAlgorithm(pattern: string, text: string) {
@@ -262,10 +266,9 @@ export default function Home() {
       const day = parseInt(match[1]);
       const lastDay = new Date(year, month, 0).getDate();
 
-      if(day > lastDay){
+      if (day > lastDay) {
         flag = false;
-      }
-      else {
+      } else {
         flag = true;
         inputDate = Date.parse(match[3] + "-" + match[2] + "-" + match[1]);
       }
@@ -293,7 +296,7 @@ export default function Home() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
       // Submit form when Enter key is pressed and Shift key is not held down
       submitQuestion(e);
     }
@@ -541,7 +544,7 @@ export default function Home() {
   if (status === "loading")
     return (
       <div className="mx-auto bg-gray-800 text-white h-[100vh] text-center">
-        <h1 className="text-4xl text-center font-bold pt-40">
+        <h1 className="text-4xl text-center font-bold pt-40 mx-4">
           Loading... Please Wait
         </h1>
       </div>
@@ -899,9 +902,9 @@ export default function Home() {
                   </div>
                 </>
               )}
-              <div className="fixed bottom-0 md:bottom-4 w-full md:w-4/5">
+              <div className="fixed bottom-2 md:bottom-4 w-full md:w-4/5">
                 <form
-                  className="px-4 md:px-0 md:w-2/3 mx-auto"
+                  className="px-4 md:px-0 md:w-2/3 mx-auto relative"
                   onSubmit={(e) => submitQuestion(e)}
                 >
                   <textarea
@@ -913,6 +916,11 @@ export default function Home() {
                     onChange={(e) => {
                       setQuestion(e.target.value);
                     }}
+                  />
+                  <FaTelegramPlane
+                    className="absolute bottom-4 right-8 md:right-4"
+                    onClick={(e) => submitQuestion(e)}
+                    size={20}
                   />
                 </form>
               </div>
