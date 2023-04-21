@@ -84,6 +84,74 @@ export default function Home() {
     return matrix[string2.length][string1.length];
   }
 
+  function BMAlgorithm(pattern : string, text: string){
+    var patternFix = pattern.toLowerCase();
+    var textFix = text.toLowerCase();
+    var patternLength = patternFix.length;
+    var textLength = textFix.length;
+    var badMatchTable = badMatch(patternFix);
+    var badTableLength = badMatchTable.badTable.length;
+    var i = patternLength-1;
+    var j = patternLength-1;
+    var flag = false;
+    var found;
+    var count;
+
+    while(i<textLength && !flag && patternLength == textLength){
+      count = 0
+      if(patternFix.charAt(j)==textFix.charAt(i)){
+        if (i + 1 == textLength) {
+          flag = true;
+        }
+        j--;
+        i--;
+        count++;
+      }
+      else {
+        i += count;
+        found = false;
+        for(let k = 0; k < badTableLength ; k++){
+          if (badMatchTable.patternChar[k] == textFix.charAt(i)){
+            i+= badMatchTable.badTable[k];
+            found = true;
+            break;
+          }
+        }
+        if (!found){
+          i+=badMatchTable.badTable[badTableLength-1]
+        }
+      }
+    }
+    return flag;
+  }
+
+  function badMatch(pattern : string){
+    var patternLength = pattern.length;
+    var flag;
+    var k = 0;
+    var patternChar = []
+    var badTable = []
+
+    for (let i = 0; i < patternLength; i++) {
+      flag = false;
+      for (let j = 0 ; j < i ; j++){
+        if (pattern.charAt(i) == patternChar[j]){
+          flag = true;
+          break
+        }
+      }
+      if(!flag) {
+        patternChar[k] = pattern.charAt(i);
+        badTable[k] = Math.max(1,patternLength - k - 1);
+        k++;
+      }
+    }
+    patternChar[k+1] = "*";
+    badTable[k+1] = patternLength;
+
+    return {badTable,patternChar};
+  }
+
   function KMPAlgorithm(pattern: string, text: string) {
     var patternFix = pattern.toLowerCase();
     var textFix = text.toLowerCase();
@@ -95,7 +163,7 @@ export default function Home() {
     var i = 0;
     var j = -1;
 
-    while (i < textLength && !flag) {
+    while (i < textLength && !flag && patternLength == textLength) {
       if (patternFix.charAt(j + 1) == textFix.charAt(i)) {
         if (i + 1 == textLength) {
           flag = true;
