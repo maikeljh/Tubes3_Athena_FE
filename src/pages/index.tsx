@@ -396,13 +396,13 @@ export default function Home() {
         let found = false;
         for (let el of qna) {
           if (!found) {
-            found = BMAlgorithm(
+            found = KMPAlgorithm(
               question.toLocaleLowerCase(),
               el.question.toLocaleLowerCase()
             );
           }
           if (found) {
-            answer = el.answer + "1";
+            answer = el.answer;
             break;
           }
         }
