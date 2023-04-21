@@ -503,8 +503,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [message]);
+    if (message.filter((el) => el.history_id === selectedHistory).length > 1) {
+      scrollToBottom();
+    }
+  }, [message, selectedHistory]);
 
   useEffect(() => {
     setQna(DummyData);
@@ -531,8 +533,10 @@ export default function Home() {
     const scrollPosition =
       window.innerHeight + window.scrollY - document.body.offsetHeight;
     setIsAtBottom(scrollPosition > -50);
-    scrollToBottom();
-  }, [selectedHistory]);
+    if (message.filter((el) => el.history_id === selectedHistory).length > 1) {
+      scrollToBottom();
+    }
+  }, [selectedHistory, message]);
 
   // Scroll to the bottom of the chat window
   const scrollToBottom = () => {
@@ -879,7 +883,8 @@ export default function Home() {
                                             window.innerHeight + window.scrollY
                                           ) +
                                             50 >
-                                          document.body.scrollHeight
+                                            document.body.scrollHeight &&
+                                          message.length > 1
                                         ) {
                                           scrollToBottom();
                                         }
