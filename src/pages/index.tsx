@@ -96,30 +96,58 @@ export default function Home() {
     var flag = false;
     var found;
     var count;
+    var goodSuffix = []
+    var jump;
+    var tempCount = 0;
+    var m = 0;
+    var total = 0;
 
     while(i<textLength && !flag && patternLength == textLength){
       count = 0
+      jump = 0
       if(patternFix.charAt(j)==textFix.charAt(i)){
-        if (i + 1 == textLength) {
+        total++;
+        if ( total == pattern.length) {
           flag = true;
         }
+        goodSuffix[0] = patternFix.charAt(j);
         j--;
         i--;
         count++;
       }
       else {
+        total = 0;
         i += count;
         found = false;
         for(let k = 0; k < badTableLength ; k++){
           if (badMatchTable.patternChar[k] == textFix.charAt(i)){
-            i+= badMatchTable.badTable[k];
+            if(badMatchTable.badTable[k]>jump){
+              jump= badMatchTable.badTable[k];
+            }
             found = true;
             break;
           }
         }
         if (!found){
-          i+=badMatchTable.badTable[badTableLength-1]
+          if(badMatchTable.badTable[badTableLength-1]>jump){
+            jump =badMatchTable.badTable[badTableLength-1];
+          }
         }
+        for ( let l = patternLength - count; l >= 0 ; l--){
+          if (m < goodSuffix.length){
+            if(goodSuffix[m] == patternFix.charAt(l)){
+              tempCount++;
+              if(tempCount > jump){
+                jump = tempCount;
+              }
+            }
+            else {
+              tempCount = 0;
+            }
+            m++;
+          }
+        }
+        i += jump;
       }
     }
     return flag;
