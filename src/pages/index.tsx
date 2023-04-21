@@ -505,6 +505,11 @@ export default function Home() {
   useEffect(() => {
     if (message.filter((el) => el.history_id === selectedHistory).length > 1) {
       scrollToBottom();
+    } else {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+      });
     }
   }, [message, selectedHistory]);
 
@@ -535,6 +540,11 @@ export default function Home() {
     setIsAtBottom(scrollPosition > -50);
     if (message.filter((el) => el.history_id === selectedHistory).length > 1) {
       scrollToBottom();
+    } else {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+      });
     }
   }, [selectedHistory, message]);
 
