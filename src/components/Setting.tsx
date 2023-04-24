@@ -33,26 +33,26 @@ const Setting = ({
             <div className="flex flex-row gap-2">
               <input
                 type="radio"
-                id="KMP"
+                id="kmp"
                 name="algorithm"
-                value="KMP"
-                checked={algorithm === "KMP"}
+                value="kmp"
+                checked={algorithm === "kmp"}
                 onChange={(e) => setAlgorithm(e.target.value)}
               />
-              <label htmlFor="KMP" className="md:text-xl font-semibold">
+              <label htmlFor="kmp" className="md:text-xl font-semibold">
                 KMP
               </label>
             </div>
             <div className="flex flex-row gap-2">
               <input
                 type="radio"
-                id="BM"
+                id="bm"
                 name="algorithm"
-                value="BM"
-                checked={algorithm === "BM"}
+                value="bm"
+                checked={algorithm === "bm"}
                 onChange={(e) => setAlgorithm(e.target.value)}
               />
-              <label htmlFor="BM" className="md:text-xl font-semibold">
+              <label htmlFor="bm" className="md:text-xl font-semibold">
                 BM
               </label>
             </div>
