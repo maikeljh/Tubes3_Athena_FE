@@ -16,7 +16,7 @@ const Help = ({
             src={Close}
             alt="close"
             width={40}
-            className="ml-auto absolute right-0 top-0"
+            className="ml-auto absolute right-0 top-0 cursor-pointer"
             onClick={() => setOpenHelp(false)}
           />
         </div>

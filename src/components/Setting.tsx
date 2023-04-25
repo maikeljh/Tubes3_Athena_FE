@@ -21,7 +21,7 @@ const Setting = ({
           <Image
             src={Close}
             alt="close"
-            className="absolute right-0 top-0 w-[2rem]"
+            className="absolute right-0 top-0 w-[2rem] cursor-pointer"
             onClick={() => setOpenSetting(false)}
           />
         </div>
