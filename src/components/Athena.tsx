@@ -358,7 +358,6 @@ const Athena = ({
                   onClick={(e) => {
                     setIsDeleteAll(true);
                     setOpenConfirm(true);
-                    setOpenSidebar(false);
                     window.scrollTo({
                       top: 0,
                       left: 0,
@@ -460,7 +459,6 @@ const Athena = ({
                       left: 0,
                       behavior: "smooth",
                     });
-                    setOpenSidebar(false);
                   }}
                 >
                   Clear conversation
@@ -706,7 +704,9 @@ const Athena = ({
           <FaArrowDown />
         </div>
       </main>
-      {openSetting || openHelp || openSidebar || openConfirm ? (
+      {openSetting || openHelp || openConfirm ? (
+        <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[9999]"></div>
+      ) : openSidebar ? (
         <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[999]"></div>
       ) : (
         <></>
