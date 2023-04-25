@@ -661,7 +661,7 @@ const Athena = ({
                   </div>
                 ) : (
                   <FaTelegramPlane
-                    className="absolute bottom-4 right-8 md:right-4"
+                    className="absolute bottom-4 right-8 md:right-4 cursor-pointer"
                     onClick={(e) => {
                       if (!loading) {
                         setLoading(true);
