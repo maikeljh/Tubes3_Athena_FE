@@ -15,6 +15,8 @@ import {
   FaTrashAlt,
 } from "react-icons/fa";
 import { Session } from "next-auth";
+import ModalConfirm from "./ModalConfirm";
+import { toast } from "react-toastify";
 
 interface History {
   historyId: number;
@@ -51,66 +53,107 @@ const Athena = ({
   const [openHelp, setOpenHelp] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [openSidebar, setOpenSidebar] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [isDeleteAll, setIsDeleteAll] = useState(false);
+  const [deleteHistoryId, setDeleteHistoryId] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [triggerGetHistories, setTriggerGetHistories] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
       // Submit form when Enter key is pressed and Shift key is not held down
-      submitQuestion(e);
+      if (!loading) {
+        setLoading(true);
+        submitQuestion(e);
+      }
     }
   };
 
   const submitQuestion = async (e: FormEvent) => {
     e.preventDefault();
+    if (question !== "") {
+      const body = {
+        userMessage: question,
+      };
 
-    const body = {
-      userMessage: question,
-    };
-
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/message/${userId}/${selectedHistory}?algo=${algorithm}`,
-      {
-        method: "POST",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" },
+      try {
+        const data = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/message/${userId}/${selectedHistory}?algo=${algorithm}`,
+          {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: { "Content-Type": "application/json" },
+          }
+        ).then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error(response.statusText);
+          }
+        });
+        setTriggerGetHistories(!triggerGetHistories);
+        setMessage(data);
+        setAfterAsk(true);
+        setSelectedHistory(data[0].historyId);
+        setQuestion("");
+        setLoading(false);
+      } catch (e) {
+        toast.error("Gagal tambah pertanyaan!");
+        setLoading(false);
       }
-    );
-
-    const data = await response.json();
-
-    setTriggerGetHistories(!triggerGetHistories);
-    setMessage(data);
-    setAfterAsk(true);
-    setSelectedHistory(data[0].historyId);
-    setQuestion("");
+    } else {
+      setLoading(false);
+    }
   };
 
   const deleteHistories = async (e: FormEvent) => {
     e.preventDefault();
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/history/${userId}`, {
-      method: "DELETE",
-    });
-    setTriggerGetHistories(!triggerGetHistories);
-    setMessage([]);
-    setHistory([]);
-    setSelectedHistory(0);
-    setQuestion("");
-  };
-
-  const deleteHistory = async (e: FormEvent, historyId: number) => {
-    e.preventDefault();
-    await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/history/${userId}/${historyId}`,
-      {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/history/${userId}`, {
         method: "DELETE",
-      }
-    );
-    setTriggerGetHistories(!triggerGetHistories);
-    if (selectedHistory === historyId) {
+      }).then((response) => {
+        if (response.ok) {
+          // Do Nothing
+        } else {
+          throw new Error(response.statusText);
+        }
+      });
+      setTriggerGetHistories(!triggerGetHistories);
       setMessage([]);
       setHistory([]);
       setSelectedHistory(0);
       setQuestion("");
+      toast.success("Berhasil delete seluruh history!");
+    } catch (e) {
+      toast.error("Gagal delete seluruh history!");
+    }
+  };
+
+  const deleteHistory = async (e: FormEvent, historyId: number) => {
+    e.preventDefault();
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/history/${userId}/${historyId}`,
+        {
+          method: "DELETE",
+        }
+      ).then((response) => {
+        if (response.ok) {
+          // Do Nothing
+        } else {
+          throw new Error(response.statusText);
+        }
+      });
+      setTriggerGetHistories(!triggerGetHistories);
+      if (selectedHistory === historyId) {
+        setMessage([]);
+        setHistory([]);
+        setSelectedHistory(0);
+        setQuestion("");
+      }
+      toast.success(`Berhasil delete history ${historyId}!`);
+    } catch (e) {
+      toast.error(`Gagal delete history ${historyId}!`);
     }
   };
 
@@ -124,33 +167,51 @@ const Athena = ({
   useEffect(() => {
     const getHistories = async () => {
       try {
-        const response = await fetch(
+        const data = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/history/${userId}`,
           {
             method: "GET",
           }
-        );
-        const data = await response.json();
-        setHistory(data);
+        ).then((res) => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            throw new Error(res.statusText);
+          }
+        });
+
+        if (data.length > 0) {
+          data.sort(function (a: History, b: History) {
+            return b.historyId - a.historyId;
+          });
+        }
+
+        setHistory(data.slice(0, 10));
         return data;
       } catch (error) {
         console.error(error);
         return [];
       }
     };
-    getHistories();
+    if (userId != 0) getHistories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, triggerGetHistories]);
 
   useEffect(() => {
     const getMessages = async () => {
       try {
-        const response = await fetch(
+        const data = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/message/${userId}/${selectedHistory}`,
           {
             method: "GET",
           }
-        );
-        const data = await response.json();
+        ).then((res) => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            throw new Error(res.statusText);
+          }
+        });
         setMessage(data);
       } catch (error) {
         console.error(error);
@@ -213,8 +274,10 @@ const Athena = ({
             <FaBars className="mr-auto hover:cursor-pointer" />
           </div>
           <h1 className="text-center flex-1">
-            {selectedHistory === 0 || selectedHistory === -1
+            {selectedHistory === 0
               ? "New Chat"
+              : selectedHistory === -1
+              ? ""
               : `History ${selectedHistory}`}
           </h1>
           <div
@@ -280,7 +343,11 @@ const Athena = ({
                     </span>
                     <FaTrashAlt
                       className="ml-auto mr-3"
-                      onClick={(event) => deleteHistory(event, e.historyId)}
+                      onClick={() => {
+                        setIsDeleteAll(false);
+                        setDeleteHistoryId(e.historyId);
+                        setOpenConfirm(true);
+                      }}
                     />
                   </span>
                 ))}
@@ -289,7 +356,8 @@ const Athena = ({
                 <div
                   className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
                   onClick={(e) => {
-                    deleteHistories(e);
+                    setIsDeleteAll(true);
+                    setOpenConfirm(true);
                     setOpenSidebar(false);
                     window.scrollTo({
                       top: 0,
@@ -365,7 +433,6 @@ const Athena = ({
                         setSelectedHistory(-1);
                         setAfterAsk(false);
                         setTimeout(() => setSelectedHistory(e.historyId), 300);
-                        setOpenSidebar(false);
                       }}
                       className="w-full p-3 rounded-xl"
                     >
@@ -373,7 +440,11 @@ const Athena = ({
                     </span>
                     <FaTrashAlt
                       className="ml-auto mr-3"
-                      onClick={(event) => deleteHistory(event, e.historyId)}
+                      onClick={() => {
+                        setDeleteHistoryId(e.historyId);
+                        setIsDeleteAll(false);
+                        setOpenConfirm(true);
+                      }}
                     />
                   </span>
                 ))}
@@ -382,7 +453,8 @@ const Athena = ({
                 <div
                   className="p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
                   onClick={(e) => {
-                    deleteHistories(e);
+                    setIsDeleteAll(true);
+                    setOpenConfirm(true);
                     window.scrollTo({
                       top: 0,
                       left: 0,
@@ -428,9 +500,7 @@ const Athena = ({
           <div className="md:ml-[20%] md:w-4/5 relative bg-gray-600 min-h-[100vh]">
             {selectedHistory == -1 ? (
               <div className="min-h-[100vh] bg-gray-700"></div>
-            ) : selectedHistory == 0 ||
-              message.filter((el) => el.historyId === selectedHistory)
-                .length === 0 ? (
+            ) : selectedHistory == 0 ? (
               <div className="flex flex-col gap-10 md:px-10">
                 <h2 className="text-white text-5xl mx-auto font-semibold pt-24">
                   Athena
@@ -570,7 +640,12 @@ const Athena = ({
             <div className="fixed bottom-2 md:bottom-4 w-full md:w-4/5">
               <form
                 className="px-4 md:px-0 md:w-2/3 mx-auto relative"
-                onSubmit={(e) => submitQuestion(e)}
+                onSubmit={(e) => {
+                  if (!loading) {
+                    setLoading(true);
+                    submitQuestion(e);
+                  }
+                }}
               >
                 <textarea
                   className="w-full bg-gray-800 p-4 rounded-xl scrollbar-thin scrollbar-thumb-gray-700"
@@ -582,11 +657,22 @@ const Athena = ({
                     setQuestion(e.target.value);
                   }}
                 />
-                <FaTelegramPlane
-                  className="absolute bottom-4 right-8 md:right-4"
-                  onClick={(e) => submitQuestion(e)}
-                  size={20}
-                />
+                {loading ? (
+                  <div className="absolute bottom-4 right-8 md:right-4">
+                    . . .
+                  </div>
+                ) : (
+                  <FaTelegramPlane
+                    className="absolute bottom-4 right-8 md:right-4"
+                    onClick={(e) => {
+                      if (!loading) {
+                        setLoading(true);
+                        submitQuestion(e);
+                      }
+                    }}
+                    size={20}
+                  />
+                )}
               </form>
             </div>
           </div>
@@ -598,6 +684,15 @@ const Athena = ({
             />
           ) : openHelp ? (
             <Help setOpenHelp={setOpenHelp} />
+          ) : openConfirm ? (
+            <ModalConfirm
+              isDeleteAll={isDeleteAll}
+              historyId={deleteHistoryId}
+              setOpenConfirm={setOpenConfirm}
+              deleteHistories={deleteHistories}
+              deleteHistory={deleteHistory}
+              setOpenSidebar={setOpenSidebar}
+            />
           ) : (
             <></>
           )}
@@ -611,7 +706,7 @@ const Athena = ({
           <FaArrowDown />
         </div>
       </main>
-      {openSetting || openHelp || openSidebar ? (
+      {openSetting || openHelp || openSidebar || openConfirm ? (
         <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[999]"></div>
       ) : (
         <></>

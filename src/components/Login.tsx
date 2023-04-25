@@ -17,26 +17,33 @@ const Login = ({
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Get all users
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-      method: "GET",
-    });
-    const data = await response.json();
+    try {
+      if (email === "" || password === "") throw new Error("Gagal Login");
 
-    for (let user of data) {
-      if (user.email === email && user.password === password) {
-        setUserId(user.userId);
-        setAuthenticated(true);
-        toast.success("Berhasil Login");
-        return;
+      // Get all users
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+        method: "GET",
+      });
+      const data = await response.json();
+
+      for (let user of data) {
+        if (user.email === email && user.password === password) {
+          setUserId(user.userId);
+          setAuthenticated(true);
+          toast.success("Berhasil Login");
+          return;
+        }
       }
+
+      throw new Error("Gagal Login");
+    } catch (e) {
+      toast.error("Gagal Login. Pastikan semua input terisi dan sesuai!");
     }
-    toast.error("Gagal Login");
   };
 
   return (
     <div className="flex flex-col mx-auto gap-8 bg-gray-800 text-white min-h-[100vh]">
-      <h1 className="text-4xl text-center mt-40 font-bold">
+      <h1 className="text-4xl text-center mt-20 sm:mt-24 font-bold">
         Welcome to Athena
       </h1>
       <form className="flex flex-col gap-4" onSubmit={(e) => handleLogin(e)}>
@@ -72,13 +79,13 @@ const Login = ({
           </span>
         </p>
       </form>
-      {/*<button
+      <button
         onClick={() => signIn("google")}
         type="button"
         className="border-2 w-[12rem] p-4 mx-auto"
       >
         Sign in With Google
-      </button>*/}
+      </button>
     </div>
   );
 };
