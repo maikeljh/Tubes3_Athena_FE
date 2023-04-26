@@ -1,19 +1,27 @@
 import { Dispatch, SetStateAction, FormEvent } from "react";
 
+interface History {
+  historyId: number;
+  userId: number;
+  topic: string;
+}
+
 const ModalConfirm = ({
-  historyId,
+  history,
   isDeleteAll,
   deleteHistory,
   deleteHistories,
   setOpenConfirm,
   setOpenSidebar,
+  setLoadingHistory,
 }: {
-  historyId: number;
+  history: History;
   isDeleteAll: boolean;
   setOpenConfirm: Dispatch<SetStateAction<boolean>>;
   setOpenSidebar: Dispatch<SetStateAction<boolean>>;
   deleteHistory: (e: FormEvent, historyId: number) => Promise<void>;
   deleteHistories: (e: FormEvent) => Promise<void>;
+  setLoadingHistory: Dispatch<SetStateAction<boolean>>;
 }) => {
   return (
     <>
@@ -21,7 +29,14 @@ const ModalConfirm = ({
         <div className="flex flex-col border-2 p-4 border-black rounded-xl gap-4">
           <h1 className="text-xl md:text-2xl font-bold text-center mx-auto">
             Are you sure want to delete{" "}
-            {isDeleteAll ? "all of your histories" : `history ${historyId}`}?
+            {isDeleteAll
+              ? "all of your histories"
+              : `history "${
+                  history.topic.length > 20
+                    ? history.topic.slice(0, 20) + "..."
+                    : history.topic
+                }"`}
+            ?
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 mx-auto">
             <button
@@ -33,8 +48,9 @@ const ModalConfirm = ({
             <button
               className="border-2 max-w-[6rem] p-2 mx-auto border-black"
               onClick={(e) => {
+                setLoadingHistory(true);
                 if (isDeleteAll) deleteHistories(e);
-                else deleteHistory(e, historyId);
+                else deleteHistory(e, history.historyId);
                 setOpenConfirm(false);
                 setOpenSidebar(false);
               }}

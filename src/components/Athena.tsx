@@ -13,14 +13,18 @@ import {
   FaWindowClose,
   FaTelegramPlane,
   FaTrashAlt,
+  FaPencilAlt,
+  FaCheck,
 } from "react-icons/fa";
 import { Session } from "next-auth";
 import ModalConfirm from "./ModalConfirm";
 import { toast } from "react-toastify";
+import { TailSpin, ThreeDots } from "react-loader-spinner";
 
 interface History {
   historyId: number;
   userId: number;
+  topic: string;
 }
 
 interface Message {
@@ -55,9 +59,16 @@ const Athena = ({
   const [openSidebar, setOpenSidebar] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [isDeleteAll, setIsDeleteAll] = useState(false);
-  const [deleteHistoryId, setDeleteHistoryId] = useState(0);
+  const [editTopic, setEditTopic] = useState(false);
+  const [newTopic, setNewTopic] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [triggerGetHistories, setTriggerGetHistories] = useState(false);
+  const [deleteHistoryElement, setDeleteHistoryElement] = useState<History>({
+    historyId: 0,
+    userId: 0,
+    topic: "",
+  });
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
@@ -124,8 +135,10 @@ const Athena = ({
       setSelectedHistory(0);
       setQuestion("");
       toast.success("Berhasil delete seluruh history!");
+      setLoadingHistory(false);
     } catch (e) {
       toast.error("Gagal delete seluruh history!");
+      setLoadingHistory(false);
     }
   };
 
@@ -151,9 +164,46 @@ const Athena = ({
         setSelectedHistory(0);
         setQuestion("");
       }
-      toast.success(`Berhasil delete history ${historyId}!`);
+      toast.success(`Berhasil delete history!`);
+      setLoadingHistory(false);
     } catch (e) {
-      toast.error(`Gagal delete history ${historyId}!`);
+      toast.error(`Gagal delete history!`);
+      setLoadingHistory(false);
+    }
+  };
+
+  const updateHistory = async (e: FormEvent, historyId: number) => {
+    e.preventDefault();
+    try {
+      const body = {
+        topic: newTopic,
+      };
+
+      const result = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/history/${userId}/${historyId}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(body),
+          headers: { "Content-Type": "application/json" },
+        }
+      ).then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error(response.statusText);
+        }
+      });
+
+      result.sort(function (a: History, b: History) {
+        return b.historyId - a.historyId;
+      });
+
+      setHistory(result.slice(0, 10));
+      toast.success(`Berhasil update history!`);
+      setLoadingHistory(false);
+    } catch (e) {
+      toast.error(`Gagal update history!`);
+      setLoadingHistory(false);
     }
   };
 
@@ -306,6 +356,7 @@ const Athena = ({
                   className="w-full border-[1px] border-gray rounded-xl p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
                   onClick={() => {
                     setSelectedHistory(0);
+                    setEditTopic(false);
                     window.scrollTo({
                       top: 0,
                       left: 0,
@@ -323,34 +374,86 @@ const Athena = ({
                 />
               </div>
               <div className="min-h-[50%] h-full flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700">
-                {history.map((e, i) => (
-                  <span
-                    className={`m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer flex flex-row items-center ${
-                      selectedHistory === e.historyId ? "bg-gray-600" : ""
-                    }`}
-                    key={i}
-                  >
-                    <span
-                      onClick={() => {
-                        setSelectedHistory(-1);
-                        setAfterAsk(false);
-                        setTimeout(() => setSelectedHistory(e.historyId), 300);
-                        setOpenSidebar(false);
-                      }}
-                      className="w-full p-3 rounded-xl"
-                    >
-                      History {e.historyId}
-                    </span>
-                    <FaTrashAlt
-                      className="ml-auto mr-3"
-                      onClick={() => {
-                        setIsDeleteAll(false);
-                        setDeleteHistoryId(e.historyId);
-                        setOpenConfirm(true);
-                      }}
-                    />
-                  </span>
-                ))}
+                {loadingHistory ? (
+                  <div className="mx-auto my-auto">
+                    <TailSpin color="#00BFFF" height={80} width={80} />
+                  </div>
+                ) : (
+                  <>
+                    {history.map((e, i) => (
+                      <span
+                        className={`m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer flex flex-row gap-3 items-center ${
+                          selectedHistory === e.historyId ? "bg-gray-600" : ""
+                        }`}
+                        key={i}
+                      >
+                        {selectedHistory === e.historyId && editTopic ? (
+                          <input
+                            type="text"
+                            className="w-full m-3 bg-gray-600"
+                            value={newTopic}
+                            onChange={(e) => setNewTopic(e.target.value)}
+                          />
+                        ) : (
+                          <span
+                            onClick={() => {
+                              setSelectedHistory(-1);
+                              setEditTopic(false);
+                              setAfterAsk(false);
+                              setTimeout(
+                                () => setSelectedHistory(e.historyId),
+                                300
+                              );
+                            }}
+                            className="w-full p-3 rounded-xl"
+                          >
+                            {e.topic.length > 23
+                              ? e.topic.slice(0, 23) + "..."
+                              : e.topic}
+                          </span>
+                        )}
+                        {selectedHistory === e.historyId && !editTopic ? (
+                          <>
+                            <FaPencilAlt
+                              onClick={() => {
+                                setNewTopic(e.topic);
+                                setEditTopic(true);
+                              }}
+                            />
+                            <FaTrashAlt
+                              className="ml-auto mr-3"
+                              onClick={() => {
+                                setIsDeleteAll(false);
+                                setDeleteHistoryElement(e);
+                                setOpenConfirm(true);
+                              }}
+                            />
+                          </>
+                        ) : selectedHistory === e.historyId && editTopic ? (
+                          <>
+                            <FaWindowClose
+                              onClick={() => {
+                                setNewTopic("");
+                                setEditTopic(false);
+                              }}
+                            />
+                            <FaCheck
+                              className="ml-auto mr-3"
+                              onClick={(event) => {
+                                setLoadingHistory(true);
+                                updateHistory(event, e.historyId);
+                                setNewTopic("");
+                                setEditTopic(false);
+                              }}
+                            />
+                          </>
+                        ) : (
+                          <></>
+                        )}
+                      </span>
+                    ))}
+                  </>
+                )}
               </div>
               <div className="flex flex-col border-t-2">
                 <div
@@ -358,11 +461,7 @@ const Athena = ({
                   onClick={(e) => {
                     setIsDeleteAll(true);
                     setOpenConfirm(true);
-                    window.scrollTo({
-                      top: 0,
-                      left: 0,
-                      behavior: "smooth",
-                    });
+                    setEditTopic(false);
                   }}
                 >
                   Clear conversation
@@ -372,6 +471,7 @@ const Athena = ({
                   onClick={() => {
                     setOpenSetting(true);
                     setOpenSidebar(false);
+                    setEditTopic(false);
                   }}
                 >
                   Settings
@@ -381,6 +481,7 @@ const Athena = ({
                   onClick={() => {
                     setOpenHelp(true);
                     setOpenSidebar(false);
+                    setEditTopic(false);
                   }}
                 >
                   Get help
@@ -392,6 +493,7 @@ const Athena = ({
                     if (status === "authenticated") signOut();
                     else setAuthenticated(false);
                     setOpenSidebar(false);
+                    setEditTopic(false);
                   }}
                 >
                   Log out
@@ -408,6 +510,7 @@ const Athena = ({
                   className="w-full border-[1px] border-gray rounded-xl p-3 m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer"
                   onClick={() => {
                     setSelectedHistory(0);
+                    setEditTopic(false);
                     window.scrollTo({
                       top: 0,
                       left: 0,
@@ -420,33 +523,87 @@ const Athena = ({
                 </div>
               </div>
               <div className="min-h-[50%] h-full flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700">
-                {history.map((e: History, i) => (
-                  <span
-                    className={`m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer flex flex-row items-center ${
-                      selectedHistory === e.historyId ? "bg-gray-600" : ""
-                    }`}
-                    key={i}
-                  >
-                    <span
-                      onClick={() => {
-                        setSelectedHistory(-1);
-                        setAfterAsk(false);
-                        setTimeout(() => setSelectedHistory(e.historyId), 300);
-                      }}
-                      className="w-full p-3 rounded-xl"
-                    >
-                      History {e.historyId}
-                    </span>
-                    <FaTrashAlt
-                      className="ml-auto mr-3"
-                      onClick={() => {
-                        setDeleteHistoryId(e.historyId);
-                        setIsDeleteAll(false);
-                        setOpenConfirm(true);
-                      }}
-                    />
-                  </span>
-                ))}
+                {loadingHistory ? (
+                  <div className="mx-auto my-auto">
+                    <TailSpin color="#00BFFF" height={80} width={80} />
+                  </div>
+                ) : (
+                  <>
+                    {history.map((e: History, i) => (
+                      <span
+                        className={`m-2 hover:bg-gray-600 rounded-xl hover:cursor-pointer flex flex-row gap-3 items-center ${
+                          selectedHistory === e.historyId ? "bg-gray-600" : ""
+                        }`}
+                        key={i}
+                      >
+                        {selectedHistory === e.historyId && editTopic ? (
+                          <input
+                            type="text"
+                            className="w-full m-3 bg-gray-600"
+                            value={newTopic}
+                            onChange={(e) => setNewTopic(e.target.value)}
+                          />
+                        ) : (
+                          <span
+                            onClick={() => {
+                              setSelectedHistory(-1);
+                              setEditTopic(false);
+                              setAfterAsk(false);
+                              setTimeout(
+                                () => setSelectedHistory(e.historyId),
+                                300
+                              );
+                            }}
+                            className="w-full p-3 rounded-xl"
+                          >
+                            {e.topic.length > 23
+                              ? e.topic.slice(0, 23) + "..."
+                              : e.topic}
+                          </span>
+                        )}
+
+                        {selectedHistory === e.historyId && !editTopic ? (
+                          <>
+                            <FaPencilAlt
+                              onClick={() => {
+                                setNewTopic(e.topic);
+                                setEditTopic(true);
+                              }}
+                            />
+                            <FaTrashAlt
+                              className="ml-auto mr-3"
+                              onClick={() => {
+                                setIsDeleteAll(false);
+                                setDeleteHistoryElement(e);
+                                setOpenConfirm(true);
+                              }}
+                            />
+                          </>
+                        ) : selectedHistory === e.historyId && editTopic ? (
+                          <>
+                            <FaWindowClose
+                              onClick={() => {
+                                setNewTopic("");
+                                setEditTopic(false);
+                              }}
+                            />
+                            <FaCheck
+                              className="ml-auto mr-3"
+                              onClick={(event) => {
+                                setLoadingHistory(true);
+                                updateHistory(event, e.historyId);
+                                setNewTopic("");
+                                setEditTopic(false);
+                              }}
+                            />
+                          </>
+                        ) : (
+                          <></>
+                        )}
+                      </span>
+                    ))}
+                  </>
+                )}
               </div>
               <div className="flex flex-col border-t-2">
                 <div
@@ -454,11 +611,7 @@ const Athena = ({
                   onClick={(e) => {
                     setIsDeleteAll(true);
                     setOpenConfirm(true);
-                    window.scrollTo({
-                      top: 0,
-                      left: 0,
-                      behavior: "smooth",
-                    });
+                    setEditTopic(false);
                   }}
                 >
                   Clear conversation
@@ -468,6 +621,7 @@ const Athena = ({
                   onClick={() => {
                     setOpenSetting(true);
                     setOpenSidebar(false);
+                    setEditTopic(false);
                   }}
                 >
                   Settings
@@ -477,6 +631,7 @@ const Athena = ({
                   onClick={() => {
                     setOpenHelp(true);
                     setOpenSidebar(false);
+                    setEditTopic(false);
                   }}
                 >
                   Get help
@@ -488,6 +643,7 @@ const Athena = ({
                     if (status === "authenticated") signOut();
                     else setAuthenticated(false);
                     setOpenSidebar(false);
+                    setEditTopic(false);
                   }}
                 >
                   Log out
@@ -651,13 +807,14 @@ const Athena = ({
                   placeholder="Send a message"
                   onKeyDown={handleKeyDown}
                   value={question}
+                  disabled={loading}
                   onChange={(e) => {
                     setQuestion(e.target.value);
                   }}
                 />
                 {loading ? (
                   <div className="absolute bottom-4 right-8 md:right-4">
-                    . . .
+                    <ThreeDots color="white" width={20} height={20} />
                   </div>
                 ) : (
                   <FaTelegramPlane
@@ -685,11 +842,12 @@ const Athena = ({
           ) : openConfirm ? (
             <ModalConfirm
               isDeleteAll={isDeleteAll}
-              historyId={deleteHistoryId}
+              history={deleteHistoryElement}
               setOpenConfirm={setOpenConfirm}
               deleteHistories={deleteHistories}
               deleteHistory={deleteHistory}
               setOpenSidebar={setOpenSidebar}
+              setLoadingHistory={setLoadingHistory}
             />
           ) : (
             <></>
