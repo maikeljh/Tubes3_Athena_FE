@@ -338,12 +338,16 @@ const Athena = ({
           >
             <FaBars className="mr-auto hover:cursor-pointer" />
           </div>
-          <h1 className="text-center flex-1">
+          <h1 className="text-center flex-1 mx-2">
             {selectedHistory === 0
               ? "New Chat"
               : selectedHistory === -1
               ? ""
-              : `${searchTopic(selectedHistory)}`}
+              : `${
+                  searchTopic(selectedHistory).length > 20
+                    ? searchTopic(selectedHistory).slice(0, 20) + "..."
+                    : searchTopic(selectedHistory)
+                }`}
           </h1>
           <div
             className="flex-none"
@@ -421,7 +425,7 @@ const Athena = ({
                                 300
                               );
                             }}
-                            className="w-full p-3 rounded-xl"
+                            className="w-full p-3 rounded-xl break-all"
                           >
                             {e.topic.length > 23
                               ? e.topic.slice(0, 23) + "..."
@@ -571,7 +575,7 @@ const Athena = ({
                               );
                               setOpenSidebar(false);
                             }}
-                            className="w-full p-3 rounded-xl"
+                            className="w-full p-3 rounded-xl break-all"
                           >
                             {e.topic.length > 23
                               ? e.topic.slice(0, 23) + "..."
