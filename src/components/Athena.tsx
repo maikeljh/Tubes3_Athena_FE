@@ -115,6 +115,10 @@ const Athena = ({
         setTriggerGetHistories(!triggerGetHistories);
         setMessage(data);
         setAfterAsk(true);
+        if (selectedHistory === 0) {
+          setLoadingHistory(true);
+          setTriggerGetHistories(!triggerGetHistories);
+        }
         setSelectedHistory(data[0].historyId);
         setQuestion("");
         setLoading(false);
@@ -254,6 +258,7 @@ const Athena = ({
       }
     };
     if (userId != 0) getHistories();
+    setLoadingHistory(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, triggerGetHistories]);
 
