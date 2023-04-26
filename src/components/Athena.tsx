@@ -112,7 +112,6 @@ const Athena = ({
             throw new Error(response.statusText);
           }
         });
-        setTriggerGetHistories(!triggerGetHistories);
         setMessage(data);
         setAfterAsk(true);
         if (selectedHistory === 0) {
@@ -251,14 +250,15 @@ const Athena = ({
         }
 
         setHistory(data.slice(0, 10));
+        setLoadingHistory(false);
         return data;
       } catch (error) {
         console.error(error);
+        setLoadingHistory(false);
         return [];
       }
     };
     if (userId != 0) getHistories();
-    setLoadingHistory(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, triggerGetHistories]);
 
