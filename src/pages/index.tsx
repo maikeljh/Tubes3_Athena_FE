@@ -75,6 +75,24 @@ export default function Home() {
     <>
       <Head>
         <title>Athena</title>
+        <meta
+          name="description"
+          content="Chat Bot Application made by Athena"
+        />
+        <meta name="og:card" content="summary" />
+        <meta name="og:title" content="Athena" />
+        <meta name="og:image" content="/img/bot.png" />
+        <meta
+          name="og:description"
+          content="Chat Bot Application made by Athena"
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Athena" />
+        <meta
+          name="twitter:description"
+          content="Chat Bot Application made by Athena"
+        />
+        <meta name="twitter:image" content="/img/bot.png" />
       </Head>
       {status === "loading" ? (
         <Loading />
