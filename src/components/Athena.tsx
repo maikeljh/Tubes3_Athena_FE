@@ -70,6 +70,16 @@ const Athena = ({
     topic: "",
   });
 
+  const searchTopic = (historyId: number): string => {
+    for (let el of history) {
+      if (el.historyId === historyId) {
+        return el.topic;
+      }
+    }
+    // Not found
+    return "";
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
       // Submit form when Enter key is pressed and Shift key is not held down
@@ -328,7 +338,7 @@ const Athena = ({
               ? "New Chat"
               : selectedHistory === -1
               ? ""
-              : `History ${selectedHistory}`}
+              : `${searchTopic(selectedHistory)}`}
           </h1>
           <div
             className="flex-none"
@@ -400,6 +410,7 @@ const Athena = ({
                               setSelectedHistory(-1);
                               setEditTopic(false);
                               setAfterAsk(false);
+                              setOpenSidebar(false);
                               setTimeout(
                                 () => setSelectedHistory(e.historyId),
                                 300
@@ -553,6 +564,7 @@ const Athena = ({
                                 () => setSelectedHistory(e.historyId),
                                 300
                               );
+                              setOpenSidebar(false);
                             }}
                             className="w-full p-3 rounded-xl"
                           >
