@@ -25,9 +25,9 @@ const ModalConfirm = ({
 }) => {
   return (
     <>
-      <div className="fixed z-[99999] bg-gray-400 rounded-2xl shadow-xl p-6 text-black w-3/4 md:w-[24rem] flex flex-col gap-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      <div className="fixed z-[99999] bg-gray-400 rounded-2xl shadow-xl p-6 text-black w-3/4 md:w-[25rem] flex flex-col gap-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <div className="flex flex-col border-2 p-4 border-black rounded-xl gap-4">
-          <h1 className="text-xl md:text-2xl font-bold text-center mx-auto">
+          <h1 className="text-sm md:text-2xl font-bold text-center mx-auto break-all">
             Are you sure want to delete{" "}
             {isDeleteAll
               ? "all of your histories"

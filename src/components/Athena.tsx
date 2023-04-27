@@ -19,7 +19,12 @@ import {
 import { Session } from "next-auth";
 import ModalConfirm from "./ModalConfirm";
 import { toast } from "react-toastify";
-import { TailSpin, ThreeDots } from "react-loader-spinner";
+import {
+  Blocks,
+  FidgetSpinner,
+  TailSpin,
+  ThreeDots,
+} from "react-loader-spinner";
 
 interface History {
   historyId: number;
@@ -60,6 +65,7 @@ const Athena = ({
   const [openConfirm, setOpenConfirm] = useState(false);
   const [isDeleteAll, setIsDeleteAll] = useState(false);
   const [editTopic, setEditTopic] = useState(false);
+  const [isNewHistory, setIsNewHistory] = useState(false);
   const [newTopic, setNewTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -116,6 +122,7 @@ const Athena = ({
         setAfterAsk(true);
         if (selectedHistory === 0) {
           setLoadingHistory(true);
+          setIsNewHistory(true);
           setTriggerGetHistories(!triggerGetHistories);
         }
         setSelectedHistory(data[0].historyId);
@@ -338,7 +345,7 @@ const Athena = ({
           >
             <FaBars className="mr-auto hover:cursor-pointer" />
           </div>
-          <h1 className="text-center flex-1 mx-2">
+          <h1 className="text-center mx-2 flex-1 break-all">
             {selectedHistory === 0
               ? "New Chat"
               : selectedHistory === -1
@@ -414,23 +421,70 @@ const Athena = ({
                             onChange={(e) => setNewTopic(e.target.value)}
                           />
                         ) : (
-                          <span
-                            onClick={() => {
-                              setSelectedHistory(-1);
-                              setEditTopic(false);
-                              setAfterAsk(false);
-                              setOpenSidebar(false);
-                              setTimeout(
-                                () => setSelectedHistory(e.historyId),
-                                300
-                              );
-                            }}
-                            className="w-full p-3 rounded-xl break-all"
-                          >
-                            {e.topic.length > 23
-                              ? e.topic.slice(0, 23) + "..."
-                              : e.topic}
-                          </span>
+                          <>
+                            {i == 0 ? (
+                              <div
+                                onClick={() => {
+                                  setSelectedHistory(-1);
+                                  setEditTopic(false);
+                                  setAfterAsk(false);
+                                  setTimeout(
+                                    () => setSelectedHistory(e.historyId),
+                                    300
+                                  );
+                                  setOpenSidebar(false);
+                                }}
+                                className="w-full p-3 rounded-xl break-all"
+                              >
+                                {isNewHistory ? (
+                                  <Typewriter
+                                    words={[
+                                      e.topic.length > 23
+                                        ? e.topic.slice(0, 23) + "..."
+                                        : e.topic,
+                                    ]}
+                                    onLoopDone={() => setIsNewHistory(false)}
+                                    typeSpeed={100}
+                                  />
+                                ) : (
+                                  <span
+                                    onClick={() => {
+                                      setSelectedHistory(-1);
+                                      setEditTopic(false);
+                                      setAfterAsk(false);
+                                      setTimeout(
+                                        () => setSelectedHistory(e.historyId),
+                                        300
+                                      );
+                                      setOpenSidebar(false);
+                                    }}
+                                  >
+                                    {e.topic.length > 23
+                                      ? e.topic.slice(0, 23) + "..."
+                                      : e.topic}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span
+                                onClick={() => {
+                                  setSelectedHistory(-1);
+                                  setEditTopic(false);
+                                  setAfterAsk(false);
+                                  setTimeout(
+                                    () => setSelectedHistory(e.historyId),
+                                    300
+                                  );
+                                  setOpenSidebar(false);
+                                }}
+                                className="w-full p-3 rounded-xl break-all"
+                              >
+                                {e.topic.length > 23
+                                  ? e.topic.slice(0, 23) + "..."
+                                  : e.topic}
+                              </span>
+                            )}
+                          </>
                         )}
                         {selectedHistory === e.historyId && !editTopic ? (
                           <>
@@ -564,23 +618,70 @@ const Athena = ({
                             onChange={(e) => setNewTopic(e.target.value)}
                           />
                         ) : (
-                          <span
-                            onClick={() => {
-                              setSelectedHistory(-1);
-                              setEditTopic(false);
-                              setAfterAsk(false);
-                              setTimeout(
-                                () => setSelectedHistory(e.historyId),
-                                300
-                              );
-                              setOpenSidebar(false);
-                            }}
-                            className="w-full p-3 rounded-xl break-all"
-                          >
-                            {e.topic.length > 23
-                              ? e.topic.slice(0, 23) + "..."
-                              : e.topic}
-                          </span>
+                          <>
+                            {i == 0 ? (
+                              <div
+                                onClick={() => {
+                                  setSelectedHistory(-1);
+                                  setEditTopic(false);
+                                  setAfterAsk(false);
+                                  setTimeout(
+                                    () => setSelectedHistory(e.historyId),
+                                    300
+                                  );
+                                  setOpenSidebar(false);
+                                }}
+                                className="w-full p-3 rounded-xl break-all"
+                              >
+                                {isNewHistory ? (
+                                  <Typewriter
+                                    words={[
+                                      e.topic.length > 23
+                                        ? e.topic.slice(0, 23) + "..."
+                                        : e.topic,
+                                    ]}
+                                    onLoopDone={() => setIsNewHistory(false)}
+                                    typeSpeed={100}
+                                  />
+                                ) : (
+                                  <span
+                                    onClick={() => {
+                                      setSelectedHistory(-1);
+                                      setEditTopic(false);
+                                      setAfterAsk(false);
+                                      setTimeout(
+                                        () => setSelectedHistory(e.historyId),
+                                        300
+                                      );
+                                      setOpenSidebar(false);
+                                    }}
+                                  >
+                                    {e.topic.length > 23
+                                      ? e.topic.slice(0, 23) + "..."
+                                      : e.topic}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span
+                                onClick={() => {
+                                  setSelectedHistory(-1);
+                                  setEditTopic(false);
+                                  setAfterAsk(false);
+                                  setTimeout(
+                                    () => setSelectedHistory(e.historyId),
+                                    300
+                                  );
+                                  setOpenSidebar(false);
+                                }}
+                                className="w-full p-3 rounded-xl break-all"
+                              >
+                                {e.topic.length > 23
+                                  ? e.topic.slice(0, 23) + "..."
+                                  : e.topic}
+                              </span>
+                            )}
+                          </>
                         )}
 
                         {selectedHistory === e.historyId && !editTopic ? (
@@ -674,7 +775,18 @@ const Athena = ({
           </div>
           <div className="md:ml-[20%] md:w-4/5 relative bg-gray-600 min-h-[100vh]">
             {selectedHistory == -1 ? (
-              <div className="min-h-[100vh] bg-gray-700"></div>
+              <div className="min-h-[100vh] bg-gray-700 flex">
+                <FidgetSpinner
+                  visible={true}
+                  height="80"
+                  width="80"
+                  ariaLabel="dna-loading"
+                  wrapperStyle={{}}
+                  wrapperClass="dna-wrapper mx-auto my-auto"
+                  ballColors={["rgb(3 7 18)", "rgb(3 7 18)", "rgb(3 7 18)"]}
+                  backgroundColor="rgb(17 24 39)"
+                />
+              </div>
             ) : selectedHistory == 0 ? (
               <div className="flex flex-col gap-10 md:px-10">
                 <h2 className="text-white text-5xl mx-auto font-semibold pt-24">
@@ -763,7 +875,7 @@ const Athena = ({
                                   height={30}
                                 />
                               </div>
-                              <pre className="whitespace-pre-wrap">
+                              <pre className="whitespace-pre-wrap break-all">
                                 {e.userMessage}
                               </pre>
                             </div>
@@ -777,7 +889,7 @@ const Athena = ({
                                 />
                               </div>
                               {afterAsk && i == message.length - 1 ? (
-                                <pre className="whitespace-pre-wrap">
+                                <pre className="whitespace-pre-wrap break-all">
                                   <Typewriter
                                     words={[e.botMessage]}
                                     cursorBlinking={false}
@@ -797,7 +909,7 @@ const Athena = ({
                                   />
                                 </pre>
                               ) : (
-                                <pre className="whitespace-pre-wrap">
+                                <pre className="whitespace-pre-wrap break-all">
                                   {e.botMessage}
                                 </pre>
                               )}
@@ -884,9 +996,19 @@ const Athena = ({
         </div>
       </main>
       {openSetting || openHelp || openConfirm ? (
-        <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[9999]"></div>
+        <div
+          className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[9999]"
+          onClick={() => {
+            setOpenSetting(false);
+            setOpenHelp(false);
+            setOpenConfirm(false);
+          }}
+        ></div>
       ) : openSidebar ? (
-        <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[999]"></div>
+        <div
+          className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-[999]"
+          onClick={() => setOpenSidebar(false)}
+        ></div>
       ) : (
         <></>
       )}
