@@ -94,7 +94,7 @@ const Register = ({
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <div className="flex flex-row mx-auto gap-4">
+        <div className="flex flex-row mx-auto gap-4 mb-10">
           <button
             type="button"
             className="border-2 sm:w-[12rem] p-4 mx-auto"

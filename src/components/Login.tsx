@@ -82,7 +82,7 @@ const Login = ({
       <button
         onClick={() => signIn("google")}
         type="button"
-        className="border-2 w-[12rem] p-4 mx-auto"
+        className="border-2 w-[12rem] p-4 mx-auto mb-10"
       >
         Sign in With Google
       </button>
