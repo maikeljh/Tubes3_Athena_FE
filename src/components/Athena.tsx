@@ -828,7 +828,9 @@ const Athena = ({
                     <h3 className="text-center">Capabilities</h3>
                     <div className="flex flex-col gap-2 md:gap-4 px-4">
                       <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
-                        {"Melakukan operasi kalkulator"}
+                        {
+                          "Melakukan operasi kalkulator dan menentukan hari dari tanggal"
+                        }
                       </div>
                       <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
                         {
@@ -850,7 +852,9 @@ const Athena = ({
                         {"Pertanyaan yang bisa dijawab masih sangat terbatas"}
                       </div>
                       <div className="bg-gray-800 text-sm lg:text-lg mx-auto p-4 rounded-xl">
-                        {"Hanya bahasa Indonesia"}
+                        {
+                          "Pertanyaan harus sesuai dengan yang disimpan di database"
+                        }
                       </div>
                     </div>
                   </div>
