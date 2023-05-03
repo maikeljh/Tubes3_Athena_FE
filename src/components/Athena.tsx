@@ -19,12 +19,7 @@ import {
 import { Session } from "next-auth";
 import ModalConfirm from "./ModalConfirm";
 import { toast } from "react-toastify";
-import {
-  Blocks,
-  FidgetSpinner,
-  TailSpin,
-  ThreeDots,
-} from "react-loader-spinner";
+import { FidgetSpinner, TailSpin, ThreeDots } from "react-loader-spinner";
 
 interface History {
   historyId: number;
@@ -897,7 +892,7 @@ const Athena = ({
                                   <Typewriter
                                     words={[e.botMessage]}
                                     cursorBlinking={false}
-                                    typeSpeed={40}
+                                    typeSpeed={30}
                                     onType={() => {
                                       if (
                                         Math.ceil(
