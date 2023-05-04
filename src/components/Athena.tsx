@@ -28,10 +28,11 @@ interface History {
 }
 
 interface Message {
+  messageId: number;
   historyId: number;
   userMessage: string;
   botMessage: string;
-  timestamp: number;
+  timestamp: Date;
   userId: number;
 }
 
@@ -113,8 +114,11 @@ const Athena = ({
             throw new Error(response.statusText);
           }
         });
+
+        await data.sort((a: Message, b: Message) => a.messageId - b.messageId);
         setMessage(data);
         setAfterAsk(true);
+
         if (selectedHistory === 0) {
           setLoadingHistory(true);
           setIsNewHistory(true);
@@ -279,6 +283,7 @@ const Athena = ({
             throw new Error(res.statusText);
           }
         });
+        await data.sort((a: Message, b: Message) => a.messageId - b.messageId);
         setMessage(data);
       } catch (error) {
         console.error(error);
