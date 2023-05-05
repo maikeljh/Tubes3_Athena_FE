@@ -47,6 +47,7 @@ const Athena = ({
   setAuthenticated: (authenticated: boolean) => void;
   status: string;
 }) => {
+  // Component States
   const [algorithm, setAlgorithm] = useState("kmp");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedHistory, setSelectedHistory] = useState(0);
@@ -72,6 +73,7 @@ const Athena = ({
     topic: "",
   });
 
+  // Function to search topic of a history ID
   const searchTopic = (historyId: number): string => {
     for (let el of history) {
       if (el.historyId === historyId) {
@@ -82,6 +84,7 @@ const Athena = ({
     return "";
   };
 
+  // Function to handle web behavior after enter is pressed
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 768) {
       // Submit form when Enter key is pressed and Shift key is not held down
@@ -92,13 +95,16 @@ const Athena = ({
     }
   };
 
+  // Function to handle submit user message
   const submitQuestion = async (e: FormEvent) => {
     e.preventDefault();
     if (question !== "") {
+      // Create body for request
       const body = {
         userMessage: question,
       };
 
+      // Try to post new message
       try {
         const data = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/message/${userId}/${selectedHistory}?algo=${algorithm}`,
@@ -115,10 +121,12 @@ const Athena = ({
           }
         });
 
+        // Sort messages based on id
         await data.sort((a: Message, b: Message) => a.messageId - b.messageId);
         setMessage(data);
         setAfterAsk(true);
 
+        // If chat is not in a history, create new history
         if (selectedHistory === 0) {
           setLoadingHistory(true);
           setIsNewHistory(true);
@@ -136,8 +144,10 @@ const Athena = ({
     }
   };
 
+  // Function to delete all histories
   const deleteHistories = async (e: FormEvent) => {
     e.preventDefault();
+    // Try to delete all histories
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/history/${userId}`, {
         method: "DELETE",
@@ -161,8 +171,11 @@ const Athena = ({
     }
   };
 
+  // Function to delete a history
   const deleteHistory = async (e: FormEvent, historyId: number) => {
     e.preventDefault();
+
+    // Try to delete a history of a user
     try {
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/history/${userId}/${historyId}`,
@@ -177,6 +190,7 @@ const Athena = ({
         }
       });
       setTriggerGetHistories(!triggerGetHistories);
+
       if (selectedHistory === historyId) {
         setMessage([]);
         setHistory([]);
@@ -191,8 +205,11 @@ const Athena = ({
     }
   };
 
+  // Function to update history
   const updateHistory = async (e: FormEvent, historyId: number) => {
     e.preventDefault();
+
+    // Try to update history
     try {
       const body = {
         topic: newTopic,
@@ -213,10 +230,12 @@ const Athena = ({
         }
       });
 
+      // Sort histories by id
       result.sort(function (a: History, b: History) {
         return b.historyId - a.historyId;
       });
 
+      // Choose only ten latest histories
       setHistory(result.slice(0, 10));
       toast.success(`Berhasil update history!`);
       setLoadingHistory(false);
@@ -233,6 +252,7 @@ const Athena = ({
     }
   };
 
+  // UseEffect to handle fetching histories
   useEffect(() => {
     const getHistories = async () => {
       try {
@@ -268,6 +288,7 @@ const Athena = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, triggerGetHistories]);
 
+  // UseEffect to handle fetching messages
   useEffect(() => {
     const getMessages = async () => {
       try {
@@ -293,6 +314,7 @@ const Athena = ({
     else setMessage([]);
   }, [selectedHistory, userId]);
 
+  // UseEffect to handle scroll behavior
   useEffect(() => {
     if (message.filter((el) => el.historyId === selectedHistory).length > 1) {
       scrollToBottom();
@@ -304,6 +326,7 @@ const Athena = ({
     }
   }, [message, selectedHistory]);
 
+  // UseEffect to declare event handler automatic scroll to bottom
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition =
@@ -321,6 +344,7 @@ const Athena = ({
     window.addEventListener("scroll", handleScroll);
   }, []);
 
+  // UseEffect to handle automatic scroll to bottom or top
   useEffect(() => {
     const scrollPosition =
       window.innerHeight + window.scrollY - document.body.offsetHeight;

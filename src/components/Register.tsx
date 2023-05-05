@@ -6,14 +6,17 @@ const Register = ({
 }: {
   setRegister: (register: boolean) => void;
 }) => {
+  // Component states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
+  // Function to handle register process
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
 
+    // Try to add new user
     try {
       if (
         email === "" ||

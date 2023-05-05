@@ -13,6 +13,7 @@ export default function Home() {
   const [userId, setUserId] = useState(0);
   const [register, setRegister] = useState(false);
 
+  // UseEffect to handle authentication
   useEffect(() => {
     const handleRegister = async () => {
       if (data != null && !authenticated) {

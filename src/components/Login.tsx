@@ -11,12 +11,15 @@ const Login = ({
   setAuthenticated: (authenticated: boolean) => void;
   setRegister: (register: boolean) => void;
 }) => {
+  // Component states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Function to handle login process
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
 
+    // Try to login
     try {
       if (email === "" || password === "") throw new Error("Gagal Login");
 
