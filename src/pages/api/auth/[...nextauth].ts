@@ -1,17 +1,17 @@
-import NextAuth, { AuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
+import NextAuth, { AuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
-export const authOptions:AuthOptions = {
- providers: [
-  GoogleProvider({
-   clientId: process.env.GOOGLE_ID as string,
-   clientSecret: process.env.GOOGLE_SECRET as string,
-  }),
- ],
- secret: process.env.MY_SECRET_ENV_VARIABLE,
- session: {
-  strategy: 'jwt',
- },
+export const authOptions: AuthOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID as string,
+      clientSecret: process.env.GOOGLE_SECRET as string,
+    }),
+  ],
+  secret: process.env.MY_SECRET_ENV_VARIABLE,
+  session: {
+    strategy: "jwt",
+  },
 };
 
 export default NextAuth(authOptions);
